@@ -59,15 +59,13 @@ void setup() {
     strip.begin();
     strip.setBrightness(55);
 
-    // initialize only the non-icon portion of the strip (icons are first ICON_COUNT LEDs)
-    uint16_t nonIconLen = STRIP_LEN - ICON_COUNT;
-    strip.fill(strip.Color(255, 0, 0), ICON_COUNT, nonIconLen);
+    strip.fill(strip.Color(255, 0, 0), 0, STRIP_LEN);
     strip.show();
     delay(200);
-    strip.fill(strip.Color(0, 255, 0), ICON_COUNT, nonIconLen);
+    strip.fill(strip.Color(0, 255, 0), 0, STRIP_LEN);
     strip.show();
     delay(200);
-    strip.fill(strip.Color(0, 0, 255), ICON_COUNT, nonIconLen);
+    strip.fill(strip.Color(0, 0, 255), 0, STRIP_LEN);
     strip.show();
     delay(200);
 
@@ -77,7 +75,7 @@ void setup() {
     uint8_t c2[3] = {0, 0, 255};
     pixelFade.begin(&pixel, c0, c1, c2, 2000); // 2s fades (single pixel)
     // strip fade should not touch icon LEDs (first ICON_COUNT LEDs)
-    stripFade.begin(&strip, c0, c1, c2, 3000, ICON_COUNT, nonIconLen); // 3s fades on non-icon region
+    stripFade.begin(&strip, c0, c1, c2, 3000, ICON_COUNT, STRIP_LEN - ICON_COUNT); // 3s fades on non-icon region
 
     // helper: set initial icon colors to off
     for (uint8_t i=0;i<ICON_COUNT;i++) {
@@ -89,16 +87,16 @@ void setup() {
     iconTask.begin(&strip, ICON_COUNT, 500, strip.Color(255,255,255));
 
     // attach servos and start their tasks
-    servo1.attach(SERVO1);
-    servo2.attach(SERVO2);
-    servo3.attach(SERVO3);
+    servo1.attach(SERVO1, 500, 2500);
+    servo2.attach(SERVO2, 500, 2500);
+    servo3.attach(SERVO3, 500, 2500);
     // sweep ranges and periods (different periods/offsets so they move independently)
-    servoTask1.begin(&servo1, 10, 170);
-    servoTask2.begin(&servo2, 30, 150);
-    servoTask3.begin(&servo3, 0, 120);
+    servoTask1.begin(&servo1, 0, 360);
+    servoTask2.begin(&servo2, 0, 360);
+    servoTask3.begin(&servo3, 0, 360);
 
-    // start UART handler and pass iconTask for commands
-    uartHandler.begin(&iconTask);
+    // start UART handler and pass iconTask and servo tasks for commands
+    uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3);
 }
 
 void loop() {
@@ -108,8 +106,8 @@ void loop() {
 
     // handle incoming UART commands
     uartHandler.update();
-
-    // update servos
+    
+    // update servo tasks
     servoTask1.update();
     servoTask2.update();
     servoTask3.update();

@@ -2,20 +2,53 @@
 
 ServoTask::ServoTask() {}
 
-void ServoTask::begin(Servo *srv, uint8_t minAng, uint8_t maxAng, unsigned long periodMs) {
+void ServoTask::begin(Servo *srv, int16_t minAng, int16_t maxAng) {
     s = srv;
     minA = minAng;
     maxA = maxAng;
-    period = periodMs;
+    currentAngle = (minA + maxA) / 2.0f;
+    targetAngle = (int16_t)currentAngle;
+    startAngle = currentAngle;
+    moveStartMs = 0;
+    moveDurationMs = 0;
+    moving = false;
+    if (s) s->write((int)currentAngle);
+}
+
+void ServoTask::setTarget(int16_t angle, uint16_t durationMs) {
+    if (!s) return;
+    if (angle < minA) angle = minA;
+    if (angle > maxA) angle = maxA;
+    if (durationMs == 0) {
+        s->write(angle);
+        currentAngle = angle;
+        targetAngle = angle;
+        moving = false;
+    } else {
+        startAngle = currentAngle;
+        targetAngle = angle;
+        moveStartMs = millis();
+        moveDurationMs = durationMs;
+        moving = true;
+    }
 }
 
 void ServoTask::update() {
     if (!s) return;
     unsigned long now = millis();
-    unsigned long t = now % period;
-    float phase = (float)t / (float)period; // 0..1
-    float tri;
-    if (phase < 0.5f) tri = phase * 2.0f; else tri = (1.0f - phase) * 2.0f; // 0..1 triangular
-    int angle = (int)(minA + tri * (float)(maxA - minA));
-    s->write(angle);
+    if (moving) {
+        unsigned long elapsed = now - moveStartMs;
+        if (elapsed >= moveDurationMs) {
+            // done
+            s->write(targetAngle);
+            currentAngle = targetAngle;
+            moving = false;
+        } else {
+            float t = (float)elapsed / (float)moveDurationMs;
+            float ang = startAngle + t * ((float)targetAngle - startAngle);
+            currentAngle = ang;
+            s->write((int)ang);
+        }
+        return;
+    }
 }

@@ -23,8 +23,6 @@ void IconTask::update() {
     lastMs = now;
 }
 
-void IconTask::setColor(uint8_t r, uint8_t g, uint8_t b) { if (target) color = target->Color(r,g,b); }
-
 void IconTask::setIconColor(uint8_t index, uint8_t r, uint8_t g, uint8_t b) {
     if (!target) return;
     if (index >= count) return;

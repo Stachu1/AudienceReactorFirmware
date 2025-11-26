@@ -3,8 +3,11 @@
 
 UartHandler::UartHandler() {}
 
-void UartHandler::begin(IconTask *icons_) {
+void UartHandler::begin(IconTask *icons_, ServoTask *s1, ServoTask *s2, ServoTask *s3) {
     icons = icons_;
+    servo1 = s1;
+    servo2 = s2;
+    servo3 = s3;
     idx = 0;
     memset(buf, 0, BUF_SZ);
 }
@@ -36,6 +39,13 @@ void UartHandler::handleLine(const char *line) {
     trim(tmp);
     if (strncmp(tmp, "icon", 4) == 0) {
         parseIconCommand(tmp+4);
+    } else if (strncmp(tmp, "servo", 5) == 0) {
+        // delegate to parseServoCommand
+        char args[BUF_SZ];
+        strncpy(args, tmp+5, BUF_SZ-1);
+        args[BUF_SZ-1] = '\0';
+        trim(args);
+        parseServoCommand(args);
     } else {
         Serial.print("Unknown command: ");
         Serial.println(tmp);
@@ -79,6 +89,39 @@ void UartHandler::parseIconCommand(char *args) {
             Serial.print("Unknown color: "); Serial.println(tok);
         }
     }
+}
+
+void UartHandler::parseServoCommand(char *args) {
+    // args: <id> <angle> [<duration_ms>|none]
+    trim(args);
+    char *tok = strtok(args, " \t");
+    if (!tok) return;
+    int id = atoi(tok);
+    tok = strtok(NULL, " \t");
+    if (!tok) return;
+    int angle = atoi(tok);
+    tok = strtok(NULL, " \t");
+    // If the user passes a duration (ms) use it. If they pass 'none' or omit it,
+    // interpret as "as fast as possible" — use a short default duration instead
+    uint16_t dur = 0;
+    if (!tok) {
+        dur = 0;
+    } else if (strcasecmp(tok, "none") == 0 || strcasecmp(tok, "fast") == 0) {
+        dur = 0;
+    } else {
+        dur = (int16_t)atol(tok);
+    }
+    ServoTask *st = nullptr;
+    if (id == 1) st = servo1;
+    else if (id == 2) st = servo2;
+    else if (id == 3) st = servo3;
+    if (!st) {
+        Serial.print("Unknown servo id: "); Serial.println(id);
+        return;
+    }
+    st->setTarget((int16_t)angle, dur);
+    Serial.print("Servo "); Serial.print(id); Serial.print(" -> "); Serial.print(angle);
+    Serial.print(" over "); Serial.print(dur); Serial.println(" ms");
 }
 
 void UartHandler::trim(char *s) {
