@@ -2,15 +2,15 @@
 
 PixelTask::PixelTask() {}
 
-void PixelTask::begin(Adafruit_NeoPixel *t) {
-    target = t;
+void PixelTask::begin(Adafruit_NeoPixel *pixel) {
+    this->pixel = pixel;
     currentStatus = IDLE;
-    lastUpdate = millis();
-    breathPhase = 0.0f;
+    lastUpdate = 0;
+    phase = 0.0f;
     uartBlinkStart = 0;
-    if (target) {
-        target->setPixelColor(0, target->Color(0, 0, 0));
-        target->show();
+    if (pixel) {
+        pixel->setPixelColor(0, pixel->Color(0, 0, 0));
+        pixel->show();
     }
 }
 
@@ -24,20 +24,18 @@ void PixelTask::triggerUartBlink() {
 }
 
 void PixelTask::update() {
-    if (!target) return;
+    if (!pixel) return;
     uint32_t now = millis();
     
     // handle different status modes
     switch (currentStatus) {
         case IDLE: {
             // green breathing effect (slow fade in/out)
-            breathPhase += 0.002f; // adjust speed here
-            if (breathPhase > 2.0f * PI) breathPhase -= 2.0f * PI;
-            
-            float brightness = (sin(breathPhase) + 1.0f) / 2.0f; // 0..1
-            uint8_t green = (uint8_t)(brightness * 255.0f);
-            target->setPixelColor(0, target->Color(0, green, 0));
-            target->show();
+            phase += (now - lastUpdate) / 160.0f;
+            if (phase > TWO_PI) phase -= TWO_PI;
+            float brightness = (sin(phase) + 1.0f) / 2.0f;
+            pixel->setPixelColor(0, pixel->Color(0, (uint8_t)(brightness * 255.0f), 0));
+            pixel->show();
             break;
         }
         
@@ -46,21 +44,24 @@ void PixelTask::update() {
             uint32_t elapsed = now - uartBlinkStart;
             if (elapsed < UART_BLINK_DURATION) {
                 // blue blink on
-                target->setPixelColor(0, target->Color(0, 0, 255));
-                target->show();
-            } else {
-                // clear and return to normal status
-                target->setPixelColor(0, target->Color(0, 0, 0));
-                target->show();
+                pixel->setPixelColor(0, pixel->Color(0, 0, 255));
+                pixel->show();
+                digitalWrite(RGB_B, LOW);
+            }
+            else {
+                // clear and return to IDLE
+                pixel->setPixelColor(0, pixel->Color(0, 0, 0));
+                pixel->show();
                 currentStatus = IDLE;
+                digitalWrite(RGB_B, HIGH);
             }
             break;
         }
             
         case ERROR: {
             // solid red
-            target->setPixelColor(0, target->Color(255, 0, 0));
-            target->show();
+            pixel->setPixelColor(0, pixel->Color(255, 0, 0));
+            pixel->show();
             break;
         }
     }

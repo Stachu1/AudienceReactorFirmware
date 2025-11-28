@@ -3,12 +3,12 @@
 
 UartHandler::UartHandler() {}
 
-void UartHandler::begin(IconTask *icons_, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pix) {
-    icons = icons_;
-    servo1 = s1;
-    servo2 = s2;
-    servo3 = s3;
-    pixel = pix;
+void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pix) {
+    this->icons = icons;
+    this->servo1 = s1;
+    this->servo2 = s2;
+    this->servo3 = s3;
+    this->pixel = pix;
     idx = 0;
     memset(buf, 0, BUF_SZ);
 }
@@ -57,7 +57,7 @@ void UartHandler::handleLine(const char *line) {
 }
 
 void UartHandler::parseIconCommand(char *args) {
-    // args: " <index> <color>"
+    // args: " <index> <color> [<blink_interval>]"
     trim(args);
     if (!icons) return;
     char *tok = strtok(args, " \t");
@@ -65,32 +65,53 @@ void UartHandler::parseIconCommand(char *args) {
     int idx = atoi(tok);
     tok = strtok(NULL, " \t");
     if (!tok) return;
-    // color can be a name or r,g,b
+    
+    // get optional blink interval
+    char *blinkTok = strtok(NULL, " \t");
+    uint16_t blinkInterval = 0;
+    if (blinkTok) {
+        blinkInterval = (uint16_t)atoi(blinkTok);
+    }
+    
+    // parse color
+    uint8_t r=0, g=0, b=0;
+    bool validColor = false;
+    
     if (strcasecmp(tok, "red") == 0) {
-        icons->setIconColor(idx, 255,0,0);
+        r=255; g=0; b=0; validColor=true;
     } else if (strcasecmp(tok, "orange") == 0) {
-        icons->setIconColor(idx, 255,100,0);
+        r=255; g=100; b=0; validColor=true;
     } else if (strcasecmp(tok, "yellow") == 0) {
-        icons->setIconColor(idx, 255,255,0);
+        r=255; g=255; b=0; validColor=true;
     } else if (strcasecmp(tok, "green") == 0) {
-        icons->setIconColor(idx, 0,255,0);
+        r=0; g=255; b=0; validColor=true;
     } else if (strcasecmp(tok, "cyan") == 0) {
-        icons->setIconColor(idx, 0,255,255);
+        r=0; g=255; b=255; validColor=true;
     } else if (strcasecmp(tok, "blue") == 0) {
-        icons->setIconColor(idx, 0,0,255);
+        r=0; g=0; b=255; validColor=true;
     } else if (strcasecmp(tok, "magenta") == 0) {
-        icons->setIconColor(idx, 255,0,255);
+        r=255; g=0; b=255; validColor=true;
     } else if (strcasecmp(tok, "white") == 0) {
-        icons->setIconColor(idx, 255,255,255);    
+        r=255; g=255; b=255; validColor=true;    
     } else if (strcasecmp(tok, "off") == 0 || strcasecmp(tok, "clear") == 0) {
         icons->clearIcon(idx);
+        return;
     } else {
         // try r,g,b
-        int r=0,g=0,b=0;
-        if (sscanf(tok, "%d,%d,%d", &r,&g,&b) == 3) {
-            icons->setIconColor(idx, (uint8_t)r, (uint8_t)g, (uint8_t)b);
+        if (sscanf(tok, "%d,%d,%d", (int*)&r, (int*)&g, (int*)&b) == 3) {
+            validColor = true;
         } else {
             Serial.print("Unknown color: "); Serial.println(tok);
+            return;
+        }
+    }
+    
+    if (validColor) {
+        if (blinkInterval > 0) {
+            icons->setIconBlink(idx, r, g, b, blinkInterval);
+            Serial.print("Icon "); Serial.print(idx); Serial.print(" blinking at "); Serial.print(blinkInterval); Serial.println(" ms");
+        } else {
+            icons->setIconColor(idx, r, g, b);
         }
     }
 }

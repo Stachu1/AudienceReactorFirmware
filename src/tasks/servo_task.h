@@ -7,7 +7,6 @@ public:
     ServoTask();
     void begin(Servo *srv, uint8_t minAng=0, uint8_t maxAng=180);
     void update();
-    // command a move to angle (0..180). If duration==0 move instantly, otherwise interpolate over duration milliseconds.
     void setTarget(uint8_t angle, uint16_t duration=0);
 
 private:

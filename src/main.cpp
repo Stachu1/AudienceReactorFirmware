@@ -21,6 +21,8 @@
 #define SERVO2 4
 #define SERVO3 2
 
+#define BUZZER 28
+
 
 Adafruit_NeoPixel pixel(1, NEO, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip(STRIP_LEN, STRIP, NEO_GRB + NEO_KHZ800);
@@ -39,6 +41,29 @@ ServoTask servoTask3;
 
 UartHandler uartHandler;
 
+void playTone(uint16_t frequency, uint16_t duration) {
+    if (frequency == 0) {
+        delay(duration);
+        return;
+    }
+    uint16_t halfPeriod = 1000000U / frequency / 2;
+    uint16_t cycles = (uint16_t)frequency * duration / 1000;
+    for (uint16_t i = 0; i < cycles; i++) {
+        digitalWrite(BUZZER, HIGH);
+        delayMicroseconds(halfPeriod);
+        digitalWrite(BUZZER, LOW);
+        delayMicroseconds(halfPeriod);
+    }
+}
+
+void playStartupTone() {
+    playTone(523, 120);
+    playTone(659, 120);
+    playTone(784, 120);
+    playTone(1047, 200);
+    playTone(0, 50);
+    playTone(1047, 150);
+}
 
 void setup() {
     Serial.begin(115200);
@@ -54,31 +79,12 @@ void setup() {
     digitalWrite(RGB_B, HIGH);
 
     pixel.begin();
-    pixel.setBrightness(100);
+    pixel.setBrightness(50);
     strip.begin();
     strip.setBrightness(55);
 
     // initialize pixel status task
     pixelTask.begin(&pixel);
-
-    strip.fill(strip.Color(255, 0, 0), 0, STRIP_LEN);
-    strip.show();
-    delay(200);
-    strip.fill(strip.Color(0, 255, 0), 0, STRIP_LEN);
-    strip.show();
-    delay(200);
-    strip.fill(strip.Color(0, 0, 255), 0, STRIP_LEN);
-    strip.show();
-    delay(200);
-
-
-    // helper: set initial icon colors to off
-    for (uint8_t i=0;i<ICON_COUNT;i++) {
-        strip.setPixelColor(i, strip.Color(0,0,0));
-    }
-    strip.show();
-
-    // start icon cycling (one icon lit at a time every 500ms)
     iconTask.begin(&strip, ICON_COUNT, 500, strip.Color(255,255,255));
 
     // attach servos and start their tasks
@@ -92,6 +98,11 @@ void setup() {
 
     // start UART handler and pass iconTask and servo tasks for commands
     uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3, &pixelTask);
+    
+    // initialize buzzer and play startup tone
+    pinMode(BUZZER, OUTPUT);
+    digitalWrite(BUZZER, LOW);
+    playStartupTone();
 }
 
 void loop() {

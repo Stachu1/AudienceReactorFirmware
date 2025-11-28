@@ -2,6 +2,16 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 
+struct IconBlinkState {
+    bool blinking = false;
+    uint8_t r = 0;
+    uint8_t g = 0;
+    uint8_t b = 0;
+    uint16_t interval = 500;
+    uint32_t lastToggle = 0;
+    bool isOn = false;
+};
+
 class IconTask {
 public:
     IconTask();
@@ -9,6 +19,7 @@ public:
     void update();
     void setColor(uint8_t r, uint8_t g, uint8_t b);
     void setIconColor(uint8_t index, uint8_t r, uint8_t g, uint8_t b);
+    void setIconBlink(uint8_t index, uint8_t r, uint8_t g, uint8_t b, uint16_t blinkInterval);
     void clearIcon(uint8_t index);
 private:
     Adafruit_NeoPixel *target = nullptr;
@@ -17,4 +28,7 @@ private:
     uint16_t last = 0;
     int cur = -1;
     uint32_t color = 0;
+    
+    static const uint8_t MAX_ICONS = 10;
+    IconBlinkState blinkStates[MAX_ICONS];
 };
