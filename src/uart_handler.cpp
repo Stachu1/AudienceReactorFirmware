@@ -24,18 +24,26 @@ void UartHandler::update() {
                 handleLine(buf);
             }
             idx = 0;
-            memset(buf,0,BUF_SZ);
-        } else {
-            if (idx < BUF_SZ-1) buf[idx++] = c;
+            memset(buf, 0, BUF_SZ);
+        }
+        else {
+            if (idx < BUF_SZ-1) {
+                buf[idx++] = c;
+            }
+            else {
+                // buffer overflow error
+                Serial.println("\033[31mError: UART command buffer overflow\033[0m");
+                if (pixel) pixel->setStatus(ERROR);
+                return;
+            }
         }
     }
 }
 
 void UartHandler::handleLine(const char *line) {
-    // Accept lines starting with '>' or not
     const char *p = line;
     while (*p == ' ' || *p == '\t') p++;
-    if (*p == '>') p++;
+    if (*p == '>' || *p == '$' || *p == '/') p++;
     // make a copy to a modifiable buffer
     char tmp[BUF_SZ];
     strncpy(tmp, p, BUF_SZ-1);
@@ -43,14 +51,11 @@ void UartHandler::handleLine(const char *line) {
     trim(tmp);
     if (strncmp(tmp, "icon", 4) == 0) {
         parseIconCommand(tmp+4);
-    } else if (strncmp(tmp, "servo", 5) == 0) {
-        // delegate to parseServoCommand
-        char args[BUF_SZ];
-        strncpy(args, tmp+5, BUF_SZ-1);
-        args[BUF_SZ-1] = '\0';
-        trim(args);
-        parseServoCommand(args);
-    } else {
+    }
+    else if (strncmp(tmp, "servo", 5) == 0) {
+        parseServoCommand(tmp+5);
+    }
+    else {
         Serial.print("Unknown command: ");
         Serial.println(tmp);
     }
@@ -72,47 +77,52 @@ void UartHandler::parseIconCommand(char *args) {
     if (blinkTok) {
         blinkInterval = (uint16_t)atoi(blinkTok);
     }
-    
+
     // parse color
     uint8_t r=0, g=0, b=0;
-    bool validColor = false;
     
     if (strcasecmp(tok, "red") == 0) {
-        r=255; g=0; b=0; validColor=true;
-    } else if (strcasecmp(tok, "orange") == 0) {
-        r=255; g=100; b=0; validColor=true;
-    } else if (strcasecmp(tok, "yellow") == 0) {
-        r=255; g=255; b=0; validColor=true;
-    } else if (strcasecmp(tok, "green") == 0) {
-        r=0; g=255; b=0; validColor=true;
-    } else if (strcasecmp(tok, "cyan") == 0) {
-        r=0; g=255; b=255; validColor=true;
-    } else if (strcasecmp(tok, "blue") == 0) {
-        r=0; g=0; b=255; validColor=true;
-    } else if (strcasecmp(tok, "magenta") == 0) {
-        r=255; g=0; b=255; validColor=true;
-    } else if (strcasecmp(tok, "white") == 0) {
-        r=255; g=255; b=255; validColor=true;    
-    } else if (strcasecmp(tok, "off") == 0 || strcasecmp(tok, "clear") == 0) {
+        r=255; g=0; b=0;
+    }
+    else if (strcasecmp(tok, "orange") == 0) {
+        r=255; g=100; b=0;
+    }
+    else if (strcasecmp(tok, "yellow") == 0) {
+        r=255; g=255; b=0;
+    }
+    else if (strcasecmp(tok, "green") == 0) {
+        r=0; g=255; b=0;
+    }
+    else if (strcasecmp(tok, "cyan") == 0) {
+        r=0; g=255; b=255;
+    }
+    else if (strcasecmp(tok, "blue") == 0) {
+        r=0; g=0; b=255;
+    }
+    else if (strcasecmp(tok, "magenta") == 0) {
+        r=255; g=0; b=255;
+    }
+    else if (strcasecmp(tok, "white") == 0) {
+        r=255; g=255; b=255;
+    }
+    else if (strcasecmp(tok, "off") == 0 || strcasecmp(tok, "clear") == 0) {
         icons->clearIcon(idx);
         return;
-    } else {
+    }
+    else {
         // try r,g,b
-        if (sscanf(tok, "%d,%d,%d", (int*)&r, (int*)&g, (int*)&b) == 3) {
-            validColor = true;
-        } else {
-            Serial.print("Unknown color: "); Serial.println(tok);
+        if (sscanf(tok, "%d,%d,%d", (int*)&r, (int*)&g, (int*)&b) != 3) {
+            Serial.print("\033[31mError: Unknown color ");
+            Serial.println(tok);
+            if (pixel) pixel->setStatus(ERROR);
             return;
         }
     }
-    
-    if (validColor) {
-        if (blinkInterval > 0) {
-            icons->setIcon(idx, r, g, b, blinkInterval);
-            Serial.print("Icon "); Serial.print(idx); Serial.print(" blinking at "); Serial.print(blinkInterval); Serial.println(" ms");
-        } else {
-            icons->setIcon(idx, r, g, b);
-        }
+
+    if (blinkInterval > 0) {
+        icons->setIcon(idx, r, g, b, blinkInterval);
+    } else {
+        icons->setIcon(idx, r, g, b);
     }
 }
 
@@ -126,14 +136,9 @@ void UartHandler::parseServoCommand(char *args) {
     if (!tok) return;
     int angle = atoi(tok);
     tok = strtok(NULL, " \t");
-    // If the user passes a duration (ms) use it. If they pass 'none' or omit it,
-    // interpret as "as fast as possible" — use a short default duration instead
+
     uint16_t dur = 0;
-    if (!tok) {
-        dur = 0;
-    } else if (strcasecmp(tok, "none") == 0 || strcasecmp(tok, "fast") == 0) {
-        dur = 0;
-    } else {
+    if (tok) {
         dur = (int16_t)atol(tok);
     }
     ServoTask *st = nullptr;
@@ -141,7 +146,10 @@ void UartHandler::parseServoCommand(char *args) {
     else if (id == 2) st = servo2;
     else if (id == 3) st = servo3;
     if (!st) {
-        Serial.print("Unknown servo id: "); Serial.println(id);
+        Serial.print("\033[31mError: Servo ");
+        Serial.print(id);
+        Serial.println(" not configured");
+        if (pixel) pixel->setStatus(ERROR);
         return;
     }
     st->setTarget((int16_t)angle, dur);

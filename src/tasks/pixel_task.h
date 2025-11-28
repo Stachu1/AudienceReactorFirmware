@@ -24,6 +24,7 @@ public:
 private:
     Adafruit_NeoPixel *pixel = nullptr;
     PixelStatus status = IDLE;
+    PixelStatus previous_status = IDLE;
     uint32_t lastUpdate;
     float phase;
     uint32_t uartBlinkStart;

@@ -27,23 +27,19 @@ void IconTask::update() {
     }
 }
 
-void IconTask::setIcon(uint8_t index, uint8_t r, uint8_t g, uint8_t b) {
-    if (!strip) return;
-    if (index >= iconCount || index >= MAX_ICONS) return;
-    // stop blinking
-    blinkStates[index].blinking = false;
-    strip->setPixelColor(index, strip->Color(r,g,b));
-    strip->show();
-}
-
 void IconTask::setIcon(uint8_t index, uint8_t r, uint8_t g, uint8_t b, uint16_t blinkInterval) {
     if (!strip) return;
     if (index >= iconCount || index >= MAX_ICONS) return;
     // set blinking state
-    blinkStates[index].blinking = true;
-    blinkStates[index].color = strip->Color(r,g,b);
-    blinkStates[index].interval = blinkInterval;
-    blinkStates[index].lastToggle = millis();
+    if (blinkInterval == 0) {
+        blinkStates[index].blinking = false;
+    }
+    else {
+        blinkStates[index].blinking = true;
+        blinkStates[index].color = strip->Color(r,g,b);
+        blinkStates[index].interval = blinkInterval;
+        blinkStates[index].lastToggle = millis();
+    }
     strip->setPixelColor(index, strip->Color(r,g,b));
     strip->show();
 }

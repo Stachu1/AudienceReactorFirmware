@@ -98,7 +98,7 @@ void setup() {
 
     // start UART handler and pass iconTask and servo tasks for commands
     uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3, &pixelTask);
-    
+
     // initialize buzzer and play startup tone
     pinMode(BUZZER, OUTPUT);
     digitalWrite(BUZZER, LOW);
@@ -106,12 +106,12 @@ void setup() {
 }
 
 void loop() {
+    // handle incoming UART commands
+    uartHandler.update();
+
     // update pixel status indicator
     pixelTask.update();
 
-    // handle incoming UART commands
-    uartHandler.update();
-    
     // update servo tasks
     servoTask1.update();
     servoTask2.update();
