@@ -108,10 +108,10 @@ void UartHandler::parseIconCommand(char *args) {
     
     if (validColor) {
         if (blinkInterval > 0) {
-            icons->setIconBlink(idx, r, g, b, blinkInterval);
+            icons->setIcon(idx, r, g, b, blinkInterval);
             Serial.print("Icon "); Serial.print(idx); Serial.print(" blinking at "); Serial.print(blinkInterval); Serial.println(" ms");
         } else {
-            icons->setIconColor(idx, r, g, b);
+            icons->setIcon(idx, r, g, b);
         }
     }
 }

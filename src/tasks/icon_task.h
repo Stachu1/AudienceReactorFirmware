@@ -3,31 +3,24 @@
 #include <Adafruit_NeoPixel.h>
 
 struct IconBlinkState {
-    bool blinking = false;
-    uint8_t r = 0;
-    uint8_t g = 0;
-    uint8_t b = 0;
-    uint16_t interval = 500;
+    uint32_t color = 0;
     uint32_t lastToggle = 0;
+    uint16_t interval = 500;
+    bool blinking = false;
     bool isOn = false;
 };
 
 class IconTask {
 public:
     IconTask();
-    void begin(Adafruit_NeoPixel *t, uint8_t iconCount, uint16_t interval, uint32_t col);
+    void begin(Adafruit_NeoPixel *strip, uint8_t iconCount);
     void update();
-    void setColor(uint8_t r, uint8_t g, uint8_t b);
-    void setIconColor(uint8_t index, uint8_t r, uint8_t g, uint8_t b);
-    void setIconBlink(uint8_t index, uint8_t r, uint8_t g, uint8_t b, uint16_t blinkInterval);
+    void setIcon(uint8_t index, uint8_t r, uint8_t g, uint8_t b);
+    void setIcon(uint8_t index, uint8_t r, uint8_t g, uint8_t b, uint16_t blinkInterval);
     void clearIcon(uint8_t index);
 private:
-    Adafruit_NeoPixel *target = nullptr;
-    uint8_t count = 0;
-    uint16_t interval = 500;
-    uint16_t last = 0;
-    int cur = -1;
-    uint32_t color = 0;
+    Adafruit_NeoPixel *strip = nullptr;
+    uint8_t iconCount = 0;
     
     static const uint8_t MAX_ICONS = 10;
     IconBlinkState blinkStates[MAX_ICONS];

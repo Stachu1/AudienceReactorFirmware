@@ -7,7 +7,6 @@
 class UartHandler {
 public:
     UartHandler();
-    // pass optional task pointers (can be nullptr if not used)
     void begin(IconTask *icons, ServoTask *s1=nullptr, ServoTask *s2=nullptr, ServoTask *s3=nullptr, PixelTask *pix=nullptr);
     void update();
 private:

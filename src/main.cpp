@@ -85,7 +85,7 @@ void setup() {
 
     // initialize pixel status task
     pixelTask.begin(&pixel);
-    iconTask.begin(&strip, ICON_COUNT, 500, strip.Color(255,255,255));
+    iconTask.begin(&strip, ICON_COUNT);
 
     // attach servos and start their tasks
     servo1.attach(SERVO1, 500, 2500);

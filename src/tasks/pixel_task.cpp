@@ -9,7 +9,7 @@ void PixelTask::begin(Adafruit_NeoPixel *pixel) {
     phase = 0.0f;
     uartBlinkStart = 0;
     if (pixel) {
-        pixel->setPixelColor(0, pixel->Color(0, 0, 0));
+        pixel->setPixelColor(0, 0);
         pixel->show();
     }
 }
@@ -45,7 +45,7 @@ void PixelTask::update() {
                 pixel->setPixelColor(0, pixel->Color(0, 0, 255));
             }
             else {
-                pixel->setPixelColor(0, pixel->Color(0, 0, 0));
+                pixel->setPixelColor(0, 0);
                 status = IDLE;
             }
             break;
