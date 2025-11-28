@@ -2,25 +2,25 @@
 
 IconTask::IconTask() {}
 
-void IconTask::begin(Adafruit_NeoPixel *t, uint8_t iconCount, unsigned long interval, uint32_t col) {
+void IconTask::begin(Adafruit_NeoPixel *t, uint8_t iconCount, uint16_t interval, uint32_t col) {
     target = t;
     count = iconCount;
-    intervalMs = interval;
+    this->interval = interval;
     color = col;
-    lastMs = millis() - intervalMs;
+    last = millis() - interval;
     cur = -1;
 }
 
 void IconTask::update() {
     if (!target || count == 0) return;
-    unsigned long now = millis();
-    if (now - lastMs < intervalMs) return;
+    uint32_t now = millis();
+    if (now - last < interval) return;
     int next = (cur + 1) % count;
     if (cur >= 0) target->setPixelColor(cur, target->Color(0,0,0));
     target->setPixelColor(next, color);
     target->show();
     cur = next;
-    lastMs = now;
+    last = now;
 }
 
 void IconTask::setIconColor(uint8_t index, uint8_t r, uint8_t g, uint8_t b) {

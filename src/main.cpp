@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <Servo.h>
-#include "tasks/fade_task.h"
 #include "tasks/icon_task.h"
 #include "tasks/servo_task.h"
+#include "tasks/pixel_task.h"
 #include "uart_handler.h"
 
 #define RGB_R 17
@@ -31,8 +31,7 @@ Servo servo2;
 Servo servo3;
 
 // Tasks (instances)
-FadeTask pixelFade;
-FadeTask stripFade;
+PixelTask pixelTask;
 IconTask iconTask;
 ServoTask servoTask1;
 ServoTask servoTask2;
@@ -55,9 +54,12 @@ void setup() {
     digitalWrite(RGB_B, HIGH);
 
     pixel.begin();
-    pixel.setBrightness(128);
+    pixel.setBrightness(100);
     strip.begin();
     strip.setBrightness(55);
+
+    // initialize pixel status task
+    pixelTask.begin(&pixel);
 
     strip.fill(strip.Color(255, 0, 0), 0, STRIP_LEN);
     strip.show();
@@ -69,13 +71,6 @@ void setup() {
     strip.show();
     delay(200);
 
-    // prepare non-blocking fade tasks
-    uint8_t c0[3] = {255, 0, 0};
-    uint8_t c1[3] = {0, 255, 0};
-    uint8_t c2[3] = {0, 0, 255};
-    pixelFade.begin(&pixel, c0, c1, c2, 2000); // 2s fades (single pixel)
-    // strip fade should not touch icon LEDs (first ICON_COUNT LEDs)
-    stripFade.begin(&strip, c0, c1, c2, 3000, ICON_COUNT, STRIP_LEN - ICON_COUNT); // 3s fades on non-icon region
 
     // helper: set initial icon colors to off
     for (uint8_t i=0;i<ICON_COUNT;i++) {
@@ -91,18 +86,17 @@ void setup() {
     servo2.attach(SERVO2, 500, 2500);
     servo3.attach(SERVO3, 500, 2500);
     // sweep ranges and periods (different periods/offsets so they move independently)
-    servoTask1.begin(&servo1, 0, 360);
-    servoTask2.begin(&servo2, 0, 360);
-    servoTask3.begin(&servo3, 0, 360);
+    servoTask1.begin(&servo1);
+    servoTask2.begin(&servo2);
+    servoTask3.begin(&servo3);
 
     // start UART handler and pass iconTask and servo tasks for commands
-    uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3);
+    uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3, &pixelTask);
 }
 
 void loop() {
-    // update leds
-    pixelFade.update();
-    stripFade.update();
+    // update pixel status indicator
+    pixelTask.update();
 
     // handle incoming UART commands
     uartHandler.update();

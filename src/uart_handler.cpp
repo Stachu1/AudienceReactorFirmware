@@ -3,11 +3,12 @@
 
 UartHandler::UartHandler() {}
 
-void UartHandler::begin(IconTask *icons_, ServoTask *s1, ServoTask *s2, ServoTask *s3) {
+void UartHandler::begin(IconTask *icons_, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pix) {
     icons = icons_;
     servo1 = s1;
     servo2 = s2;
     servo3 = s3;
+    pixel = pix;
     idx = 0;
     memset(buf, 0, BUF_SZ);
 }
@@ -18,7 +19,10 @@ void UartHandler::update() {
         if (c == '\r') continue;
         if (c == '\n') {
             buf[idx] = '\0';
-            if (idx > 0) handleLine(buf);
+            if (idx > 0) {
+                if (pixel) pixel->triggerUartBlink();
+                handleLine(buf);
+            }
             idx = 0;
             memset(buf,0,BUF_SZ);
         } else {
