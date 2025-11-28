@@ -57,12 +57,10 @@ void playTone(uint16_t frequency, uint16_t duration) {
 }
 
 void playStartupTone() {
-    playTone(523, 120);
-    playTone(659, 120);
-    playTone(784, 120);
-    playTone(1047, 200);
-    playTone(0, 50);
-    playTone(1047, 150);
+    playTone(587, 60);
+    playTone(880, 60);
+    playTone(0, 10);
+    playTone(1175, 110);
 }
 
 void setup() {
