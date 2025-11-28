@@ -9,7 +9,7 @@
 enum PixelStatus {
     IDLE,      // green breathing
     UART,      // blue blink
-    RADAR,     // orange blink
+    TRACKING,  // orange breathing
     ERROR      // red solid
 };
 
@@ -23,7 +23,7 @@ public:
 
 private:
     Adafruit_NeoPixel *pixel = nullptr;
-    PixelStatus currentStatus = IDLE;
+    PixelStatus status = IDLE;
     uint32_t lastUpdate;
     float phase;
     uint32_t uartBlinkStart;

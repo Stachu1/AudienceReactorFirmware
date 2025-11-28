@@ -4,7 +4,7 @@ PixelTask::PixelTask() {}
 
 void PixelTask::begin(Adafruit_NeoPixel *pixel) {
     this->pixel = pixel;
-    currentStatus = IDLE;
+    status = IDLE;
     lastUpdate = 0;
     phase = 0.0f;
     uartBlinkStart = 0;
@@ -15,11 +15,11 @@ void PixelTask::begin(Adafruit_NeoPixel *pixel) {
 }
 
 void PixelTask::setStatus(PixelStatus status) {
-    currentStatus = status;
+    this->status = status;
 }
 
 void PixelTask::triggerUartBlink() {
-    currentStatus = UART;
+    status = UART;
     uartBlinkStart = millis();
 }
 
@@ -28,14 +28,13 @@ void PixelTask::update() {
     uint32_t now = millis();
     
     // handle different status modes
-    switch (currentStatus) {
+    switch (status) {
         case IDLE: {
-            // green breathing effect (slow fade in/out)
+            // green breathing effect
             phase += (now - lastUpdate) / 160.0f;
             if (phase > TWO_PI) phase -= TWO_PI;
             float brightness = (sin(phase) + 1.0f) / 2.0f;
             pixel->setPixelColor(0, pixel->Color(0, (uint8_t)(brightness * 255.0f), 0));
-            pixel->show();
             break;
         }
         
@@ -43,28 +42,30 @@ void PixelTask::update() {
             // solid blue
             uint32_t elapsed = now - uartBlinkStart;
             if (elapsed < UART_BLINK_DURATION) {
-                // blue blink on
                 pixel->setPixelColor(0, pixel->Color(0, 0, 255));
-                pixel->show();
-                digitalWrite(RGB_B, LOW);
             }
             else {
-                // clear and return to IDLE
                 pixel->setPixelColor(0, pixel->Color(0, 0, 0));
-                pixel->show();
-                currentStatus = IDLE;
-                digitalWrite(RGB_B, HIGH);
+                status = IDLE;
             }
+            break;
+        }
+
+        case TRACKING: {
+            // orange breathing effect
+            phase += (now - lastUpdate) / 40.0f;
+            if (phase > TWO_PI) phase -= TWO_PI;
+            float brightness = (sin(phase) + 1.0f) / 2.0f;
+            pixel->setPixelColor(0, pixel->Color((uint8_t)(brightness * 255.0f), (uint8_t)(brightness * 50.0f), 0));
             break;
         }
             
         case ERROR: {
             // solid red
             pixel->setPixelColor(0, pixel->Color(255, 0, 0));
-            pixel->show();
             break;
         }
     }
-    
+    pixel->show();
     lastUpdate = now;
 }
