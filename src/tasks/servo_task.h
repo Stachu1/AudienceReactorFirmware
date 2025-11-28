@@ -5,20 +5,20 @@
 class ServoTask {
 public:
     ServoTask();
-    void begin(Servo *srv, uint8_t minAng=0, uint8_t maxAng=180);
+    void begin(Servo *servo, uint8_t minAng=0, uint8_t maxAng=180);
     void update();
     void setTarget(uint8_t angle, uint16_t duration=0);
 
 private:
-    Servo *s = nullptr;
-    uint8_t minA = 0;
-    uint8_t maxA = 180;
+    Servo *servo = nullptr;
+    uint8_t minA;
+    uint8_t maxA;
 
     // movement state
-    float currentAngle = 0.0f;
+    uint8_t currentAngle = 0.0f;
     uint8_t targetAngle = 0;
-    float startAngle = 0.0f;
+    uint8_t startAngle = 0.0f;
     uint32_t moveStart = 0;
-    uint32_t moveDuration = 0;
+    uint16_t moveDuration = 0;
     bool moving = false;
 };
