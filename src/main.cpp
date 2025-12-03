@@ -6,6 +6,7 @@
 #include "tasks/servo_task.h"
 #include "tasks/pixel_task.h"
 #include "tasks/display_task.h"
+#include "tasks/radar_task.h"
 #include "uart_handler.h"
 
 #define RGB_R 17
@@ -47,6 +48,7 @@ ServoTask servoTask1;
 ServoTask servoTask2;
 ServoTask servoTask3;
 DisplayTask displayTask;
+RadarTask radarTask;
 
 UartHandler uartHandler;
 
@@ -104,6 +106,9 @@ void setup() {
     servoTask2.begin(&servo2);
     servoTask3.begin(&servo3);
 
+    // initialize radar task
+    radarTask.begin(&Serial1, 256000);
+
     // start UART handler and pass iconTask and servo tasks for commands
     uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3, &pixelTask, &displayTask);
 
@@ -127,4 +132,7 @@ void loop() {
 
     // update display task
     displayTask.update();
+
+    // update radar task
+    radarTask.update();
 }
