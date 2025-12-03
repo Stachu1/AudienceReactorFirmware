@@ -1,9 +1,11 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <Servo.h>
+#include <TM1637Display.h>
 #include "tasks/icon_task.h"
 #include "tasks/servo_task.h"
 #include "tasks/pixel_task.h"
+#include "tasks/display_task.h"
 #include "uart_handler.h"
 
 #define RGB_R 17
@@ -23,9 +25,15 @@
 
 #define BUZZER 28
 
+#define TM1637_CLK 27
+#define TM1637_DIO 26
+
 
 Adafruit_NeoPixel pixel(1, NEO, NEO_GRB + NEO_KHZ800);
 Adafruit_NeoPixel strip(STRIP_LEN, STRIP, NEO_GRB + NEO_KHZ800);
+
+// TM1637 Display
+TM1637Display display(TM1637_CLK, TM1637_DIO);
 
 // Servos
 Servo servo1;
@@ -38,6 +46,7 @@ IconTask iconTask;
 ServoTask servoTask1;
 ServoTask servoTask2;
 ServoTask servoTask3;
+DisplayTask displayTask;
 
 UartHandler uartHandler;
 
@@ -84,18 +93,19 @@ void setup() {
     // initialize pixel status task
     pixelTask.begin(&pixel);
     iconTask.begin(&strip, ICON_COUNT);
+    displayTask.begin(&display);
 
     // attach servos and start their tasks
     servo1.attach(SERVO1, 500, 2500);
     servo2.attach(SERVO2, 500, 2500);
     servo3.attach(SERVO3, 500, 2500);
-    // sweep ranges and periods (different periods/offsets so they move independently)
+
     servoTask1.begin(&servo1);
     servoTask2.begin(&servo2);
     servoTask3.begin(&servo3);
 
     // start UART handler and pass iconTask and servo tasks for commands
-    uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3, &pixelTask);
+    uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3, &pixelTask, &displayTask);
 
     // initialize buzzer and play startup tone
     pinMode(BUZZER, OUTPUT);
@@ -114,4 +124,7 @@ void loop() {
     servoTask1.update();
     servoTask2.update();
     servoTask3.update();
+
+    // update display task
+    displayTask.update();
 }

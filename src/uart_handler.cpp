@@ -1,14 +1,14 @@
 #include "uart_handler.h"
-#include <string.h>
 
 UartHandler::UartHandler() {}
 
-void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pix) {
+void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pix, DisplayTask *display) {
     this->icons = icons;
     this->servo1 = s1;
     this->servo2 = s2;
     this->servo3 = s3;
     this->pixel = pix;
+    this->display = display;
     idx = 0;
     memset(buf, 0, BUF_SZ);
 }
@@ -54,6 +54,9 @@ void UartHandler::handleLine(const char *line) {
     }
     else if (strncmp(tmp, "servo", 5) == 0) {
         parseServoCommand(tmp+5);
+    }
+    else if (strncmp(tmp, "timer", 5) == 0) {
+        parseTimerCommand(tmp+5);
     }
     else {
         Serial.print("Unknown command: ");
@@ -155,6 +158,45 @@ void UartHandler::parseServoCommand(char *args) {
     st->setTarget((int16_t)angle, dur);
     Serial.print("Servo "); Serial.print(id); Serial.print(" -> "); Serial.print(angle);
     Serial.print(" over "); Serial.print(dur); Serial.println(" ms");
+}
+
+void UartHandler::parseTimerCommand(char *args) {
+    // args: <seconds>|start|stop|brightness <0-7>
+    trim(args);
+    if (strncmp(args, "start", 5) == 0) {
+        // start timer
+        if (display) {
+            display->start();
+            Serial.println("Timer started");
+        }
+    }
+    else if (strncmp(args, "stop", 4) == 0) {
+        // stop timer
+        if (display) {
+            display->stop();
+            Serial.println("Timer stopped");
+        }
+    }
+    else if (strncmp(args, "brightness", 10) == 0) {
+        char *tok = strtok(args + 10, " \t");
+        if (!tok) return;
+        int b = atoi(tok);
+        if (b < 0) b = 0;
+        if (b > 7) b = 7;
+        extern DisplayTask displayTask;
+        displayTask.setBrightness((uint8_t)b);
+        Serial.print("Display brightness set to ");
+        Serial.println(b);
+    }
+    else {
+        // set time
+        int seconds = atoi(args);
+        extern DisplayTask displayTask;
+        displayTask.setTime((uint32_t)seconds);
+        Serial.print("Timer set to ");
+        Serial.print(seconds);
+        Serial.println(" seconds");
+    }
 }
 
 void UartHandler::trim(char *s) {

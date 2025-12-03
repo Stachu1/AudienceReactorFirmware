@@ -19,7 +19,7 @@ void PixelTask::setStatus(PixelStatus status) {
 }
 
 void PixelTask::triggerUartBlink() {
-    previous_status = status;
+    previousStatus = status;
     status = UART;
     uartBlinkStart = millis();
 }
@@ -47,7 +47,7 @@ void PixelTask::update() {
             }
             else {
                 pixel->setPixelColor(0, 0);
-                status = previous_status;
+                status = previousStatus;
             }
             break;
         }
