@@ -32,6 +32,31 @@ void ServoTask::setTarget(uint8_t angle, uint16_t duration) {
     }
 }
 
+void ServoTask::moveTo(uint8_t angle) {
+    int time = 36;
+    static int prev_angle = 90;
+        if(angle >= prev_angle) {
+        for(int i = prev_angle; i <= angle; i++) {
+            servo->write(i); //move to this angle
+            delay(time);
+            }  
+        }
+        else{
+            for(int i = prev_angle; i >= angle; i--) {
+                servo->write(i);
+                delay(time);
+            }
+        }
+        prev_angle = angle;
+}
+
+void ServoTask::nodding() {
+    if (!moving) {
+        setTarget(120, 0);
+        setTarget(90, 500);
+    }
+}
+
 void ServoTask::update() {
     if (!servo) return;
     uint32_t now = millis();

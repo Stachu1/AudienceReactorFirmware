@@ -6,12 +6,12 @@ RadarTask::RadarTask()
       state(WAIT_AA), index(0) {}
 
 void RadarTask::begin(HardwareSerial* serial, uint32_t baud) {
-    radarSerial = serial;
-    radarSerial->begin(baud);
+    radarSerial = serial; //setting the comunication to serial
+    radarSerial->begin(baud); //setting baud rate?
     x = 0;
     y = 0;
     detected = false;
-    state = WAIT_AA;
+    state = WAIT_AA; //wait for start command from radar?
     index = 0;
 }
 
@@ -83,10 +83,19 @@ bool RadarTask::parseData(const uint8_t* buf, uint32_t len) {
 
 float RadarTask::getAngle() {
     if (detected) {
+        int sum_angle = 0;
+        int times = 2;
         // Angle calculation (convert radians to degrees, then flip)
         float angleRad = atan2(y, x) - (PI / 2);
         float angleDeg = angleRad * (180.0 / PI);
-        return -angleDeg; // align angle with x measurement positive / negative sign
+        //return -angleDeg; // align angle with x measurement positive / negative sign
+        for(int i = 0; i < times; i++)
+        {
+            sum_angle = sum_angle+angleDeg;
+        }
+        int angle_true = sum_angle/times;
+        return -angle_true; // align angle with x measurement positive / negative sign
+
     } else {
         return 0.0;
     }

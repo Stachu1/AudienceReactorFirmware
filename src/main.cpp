@@ -97,16 +97,17 @@ void setup() {
     iconTask.begin(&strip, ICON_COUNT);
     displayTask.begin(&display);
 
-    // attach servos and start their tasks
+    // attach servos and start their tasks //angles are in PWM pulsewidth in micro sencond
     servo1.attach(SERVO1, 500, 2500);
     servo2.attach(SERVO2, 500, 2500);
     servo3.attach(SERVO3, 500, 2500);
 
-    servoTask1.begin(&servo1);
-    servoTask2.begin(&servo2);
-    servoTask3.begin(&servo3);
+    //defining servo 1 2 and 3
+    servoTask1.begin(&servo1); //rotation of head
+    servoTask2.begin(&servo2); //nodding tilting 1
+    servoTask3.begin(&servo3); //nodding tilting 2
 
-    // initialize radar task
+    // initialize radar task // serial and baudrate
     radarTask.begin(&Serial1, 256000);
 
     // start UART handler and pass iconTask and servo tasks for commands
@@ -133,6 +134,20 @@ void loop() {
     // update display task
     displayTask.update();
 
-    // update radar task
+    // update radar task //updating radar values.
     radarTask.update();
+
+    //get radar angle and send to servo.
+    int turn_angle = -radarTask.getAngle()+90;
+    servoTask1.moveTo(turn_angle);
+    servoTask2.moveTo(turn_angle);
+    
+    static int count = count++; //this should be exhanged for when the command for nodding gets sendt from pi
+    if(count == 1000) {
+        servoTask2.nodding();
+        servoTask3.nodding();
+        count = 0;
+    }
+    
+   
 }
