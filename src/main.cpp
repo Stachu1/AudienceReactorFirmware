@@ -102,12 +102,13 @@ void setup() {
     servo2.attach(SERVO2, 500, 2500);
     servo3.attach(SERVO3, 500, 2500);
 
-    servoTask1.begin(&servo1);
-    servoTask2.begin(&servo2);
-    servoTask3.begin(&servo3);
+    //defining servo 1 2 and 3
+    servoTask1.begin(&servo1); //rotation of head
+    servoTask2.begin(&servo2); //nodding tilting 1
+    servoTask3.begin(&servo3); //nodding tilting 2
 
     // initialize radar task
-    radarTask.begin(&Serial1, 256000);
+    radarTask.begin(&Serial1, &servoTask1, 256000);
 
     // start UART handler and pass iconTask and servo tasks for commands
     uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3, &pixelTask, &displayTask);
@@ -116,6 +117,8 @@ void setup() {
     pinMode(BUZZER, OUTPUT);
     digitalWrite(BUZZER, LOW);
     playStartupTone();
+
+    radarTask.tracking = true;
 }
 
 void loop() {
