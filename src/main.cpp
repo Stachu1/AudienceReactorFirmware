@@ -115,7 +115,7 @@ void setup() {
     iconTask.begin(&strip, ICON_COUNT);
     displayTask.begin(&display);
 
-    // attach servos and start their tasks //angles are in PWM pulsewidth in micro sencond
+    // attach servos and start their tasks
     servo1.attach(SERVO1, 500, 2500);
     servo2.attach(SERVO2, 500, 2500);
     servo3.attach(SERVO3, 500, 2500);
@@ -125,8 +125,8 @@ void setup() {
     servoTask2.begin(&servo2); //nodding tilting 1
     servoTask3.begin(&servo3); //nodding tilting 2
 
-    // initialize radar task // serial and baudrate
-    radarTask.begin(&Serial1, 256000);
+    // initialize radar task
+    radarTask.begin(&Serial1, &servoTask1, 256000);
 
     // start UART handler and pass iconTask and servo tasks for commands
     uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3, &pixelTask, &displayTask);
@@ -135,6 +135,8 @@ void setup() {
     pinMode(BUZZER, OUTPUT);
     digitalWrite(BUZZER, LOW);
     playStartupTone();
+
+    radarTask.tracking = true;
 }
 
 void loop() {
@@ -155,28 +157,7 @@ void loop() {
     // update radar task //updating radar values.
     radarTask.update();
 
-    //get radar angle and send to servo.
-    float turn_angle = -radarTask.getAngle()+90; //
-    servoTask1.turn_head(turn_angle);
-    //82 degree center of head
-
     //servoTask1.setTarget(82, 0);
     //servoTask2.setTarget(90+angle, 0); //right audience reactor viewpoint //opposite from left
     //servoTask3.setTarget(90-angle, 0); //left audience reactor viewpoint
-    
-    
-    // int do_nod = 1;
-    // if(do_nod == 1) {
-    //     void nodding();
-    //     do_nod = 0;
-    // }
-    // delay(3000);
-
-    //nodding
-    // static int count = count++; //this should be exhanged for when the command for nodding gets sendt from pi
-    // if(count == 100) {
-    //     servoTask2.nodding();
-    //     servoTask3.nodding();
-    //     count = 0;
-    // }
 }

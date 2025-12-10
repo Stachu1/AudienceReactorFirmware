@@ -5,14 +5,17 @@ RadarTask::RadarTask()
     : radarSerial(nullptr), x(0), y(0), detected(false),
       state(WAIT_AA), index(0) {}
 
-void RadarTask::begin(HardwareSerial* serial, uint32_t baud) {
+void RadarTask::begin(HardwareSerial* serial, ServoTask* turn_task, uint32_t baud) {
     radarSerial = serial; //setting the comunication to serial
+    this->turn_task = turn_task;
     radarSerial->begin(baud); //setting baud rate?
     x = 0;
     y = 0;
     detected = false;
+    tracking = false;
     state = WAIT_AA; //wait for start command from radar?
     index = 0;
+    lastUpdate = 0;
 }
 
 void RadarTask::update() {
@@ -60,6 +63,35 @@ void RadarTask::update() {
                 break;
         }
     }
+    uint32_t millistNow = millis();
+    if (millistNow - lastUpdate > UPDATE_INTERVAL)
+    {
+        lastUpdate = millistNow;
+        uint8_t turn_angle = -getAngle() + TURN_OFFSET;
+        
+        float a = turn_angle;
+        float factor;
+        if (a <= 60.0f) {
+            factor = 1.15f;
+        } else if (a >= 120.0f) {
+            factor = 0.85f;
+        } else if (a <= 90.0f) {
+            // 60 → 90 : 1.15 → 1.0
+            float t = (a - 60.0f) / 30.0f;
+            // smoothstep
+            t = t * t * (3.0f - 2.0f * t);
+            factor = 1.15f - 0.15f * t;
+        }else {
+            // 90 → 120 : 1.0 → 0.85
+            float t = (a - 90.0f) / 30.0f;
+            // smoothstep
+            t = t * t * (3.0f - 2.0f * t);
+            factor = 1.0f - 0.15f * t;
+        }
+        float output = a * factor;
+        
+        turn_task->setTarget(turn_angle, UPDATE_INTERVAL);
+    }
 }
 
 bool RadarTask::parseData(const uint8_t* buf, uint32_t len) {
@@ -83,19 +115,10 @@ bool RadarTask::parseData(const uint8_t* buf, uint32_t len) {
 
 float RadarTask::getAngle() {
     if (detected) {
-        int sum_angle = 0;
-        int times = 3;
         // Angle calculation (convert radians to degrees, then flip)
         float angleRad = atan2(y, x) - (PI / 2);
         float angleDeg = angleRad * (180.0 / PI);
-        //return -angleDeg; // align angle with x measurement positive / negative sign
-        for(int i = 0; i < times; i++)
-        {
-            sum_angle = sum_angle+angleDeg;
-        }
-        float angle_true = sum_angle/times;
-        return -angle_true; // align angle with x measurement positive / negative sign
-
+        return -angleDeg; // align angle with x measurement positive / negative sign
     } else {
         return 0.0;
     }
