@@ -5,7 +5,7 @@
 class RadarTask {
 public:
     RadarTask();
-    void begin(HardwareSerial* serial, ServoTask* turn_task, uint32_t baud = 256000);
+    void begin(HardwareSerial* serial, ServoTask* servo_task, uint32_t baud = 256000);
     void update();
     float getAngle();
     float getDistance();
@@ -18,7 +18,7 @@ public:
 
 private:
     HardwareSerial* radarSerial;
-    ServoTask* turn_task;
+    ServoTask* servo_task;
     bool parseData(const uint8_t* buffer, uint32_t len);
     
     enum State {

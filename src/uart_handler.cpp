@@ -2,20 +2,21 @@
 
 UartHandler::UartHandler() {}
 
-void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pix, DisplayTask *display) {
+void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pix, DisplayTask *display, RadarTask *radar) {
     this->icons = icons;
     this->servo1 = s1;
     this->servo2 = s2;
     this->servo3 = s3;
     this->pixel = pix;
     this->display = display;
+    this->radar = radar;
     idx = 0;
     memset(buf, 0, BUF_SZ);
 }
 
 void UartHandler::update() {
     while (Serial.available()) {
-        char c = (char)Serial.read();
+        uint8_t c = (uint8_t)Serial.read();
         if (c == '\r') continue;
         if (c == '\n') {
             buf[idx] = '\0';
@@ -57,6 +58,9 @@ void UartHandler::handleLine(const char *line) {
     }
     else if (strncmp(tmp, "timer", 5) == 0) {
         parseTimerCommand(tmp+5);
+    }
+    else if (strncmp(tmp, "tracking", 8) == 0) {
+        parseTrackingCommand(tmp+8);
     }
     else {
         Serial.print("Unknown command: ");
@@ -196,6 +200,31 @@ void UartHandler::parseTimerCommand(char *args) {
         Serial.print("Timer set to ");
         Serial.print(seconds);
         Serial.println(" seconds");
+    }
+}
+
+void UartHandler::parseTrackingCommand(char *args) {
+    // args: on|off
+    trim(args);
+    if (!radar) {
+        Serial.println("\033[31mError: Radar not configured\033[0m");
+        if (pixel) pixel->setStatus(ERROR);
+        return;
+    }
+
+    if (strcasecmp(args, "on") == 0) {
+        radar->tracking = true;
+        Serial.println("Radar tracking enabled");
+    }
+    else if (strcasecmp(args, "off") == 0) {
+        radar->tracking = false;
+        Serial.println("Radar tracking disabled");
+    }
+    else {
+        Serial.print("\033[31mError: Invalid tracking command: ");
+        Serial.println(args);
+        Serial.println("Use 'tracking on' or 'tracking off'\033[0m");
+        if (pixel) pixel->setStatus(ERROR);
     }
 }
 

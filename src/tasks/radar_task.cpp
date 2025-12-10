@@ -5,9 +5,9 @@ RadarTask::RadarTask()
     : radarSerial(nullptr), x(0), y(0), detected(false),
       state(WAIT_AA), index(0) {}
 
-void RadarTask::begin(HardwareSerial* serial, ServoTask* turn_task, uint32_t baud) {
+void RadarTask::begin(HardwareSerial* serial, ServoTask* servo_task, uint32_t baud) {
     radarSerial = serial;
-    this->turn_task = turn_task;
+    this->servo_task = servo_task;
     radarSerial->begin(baud);
     x = 0;
     y = 0;
@@ -63,13 +63,16 @@ void RadarTask::update() {
                 break;
         }
     }
+    if (!tracking) {
+        return;
+    }
     uint32_t millistNow = millis();
     if (millistNow - lastUpdate > UPDATE_INTERVAL)
     {
         lastUpdate = millistNow;
         uint8_t turn_angle = -getAngle() + TURN_OFFSET;
         //uint8_t true_angle = angleCompensation(turn_angle);
-        turn_task->setTarget(turn_angle, UPDATE_INTERVAL);
+        servo_task->setTarget(turn_angle, UPDATE_INTERVAL);
     }
 }
 
