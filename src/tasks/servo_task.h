@@ -9,8 +9,6 @@ public:
     void update();
     void setTarget(uint8_t angle, uint16_t duration=0);
     void moveTo(uint8_t angle);
-    //void nodding(uint8_t angle);
-    void turn_head(float angle);
 
 private:
     Servo *servo = nullptr;

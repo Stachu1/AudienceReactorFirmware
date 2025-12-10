@@ -9,6 +9,7 @@ public:
     void update();
     float getAngle();
     float getDistance();
+    uint8_t angleCompensation(uint8_t);
     
     int16_t x;
     int16_t y;

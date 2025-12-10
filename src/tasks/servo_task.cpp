@@ -50,29 +50,6 @@ void ServoTask::moveTo(uint8_t angle) {
         prev_angle = angle;
 }
 
-void ServoTask::turn_head(float turn_angle) {
-    float a = turn_angle;
-    float factor;
-    if (a <= 60.0f) {
-        factor = 1.15f;
-    } else if (a >= 120.0f) {
-        factor = 0.85f;
-    } else if (a <= 90.0f) {
-        // 60 → 90 : 1.15 → 1.0
-        float t = (a - 60.0f) / 30.0f;
-        // smoothstep
-        t = t * t * (3.0f - 2.0f * t);
-        factor = 1.15f - 0.15f * t;
-    }else {
-        // 90 → 120 : 1.0 → 0.85
-        float t = (a - 90.0f) / 30.0f;
-        // smoothstep
-        t = t * t * (3.0f - 2.0f * t);
-        factor = 1.0f - 0.15f * t;
-    }
-    float output = a * factor;
-    moveTo(output);
-}
 
 void ServoTask::update() {
     if (!servo) return;
