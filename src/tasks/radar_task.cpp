@@ -84,7 +84,7 @@ bool RadarTask::parseData(const uint8_t* buf, uint32_t len) {
 float RadarTask::getAngle() {
     if (detected) {
         int sum_angle = 0;
-        int times = 2;
+        int times = 3;
         // Angle calculation (convert radians to degrees, then flip)
         float angleRad = atan2(y, x) - (PI / 2);
         float angleDeg = angleRad * (180.0 / PI);
@@ -93,7 +93,7 @@ float RadarTask::getAngle() {
         {
             sum_angle = sum_angle+angleDeg;
         }
-        int angle_true = sum_angle/times;
+        float angle_true = sum_angle/times;
         return -angle_true; // align angle with x measurement positive / negative sign
 
     } else {

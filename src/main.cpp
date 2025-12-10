@@ -67,6 +67,24 @@ void playTone(uint16_t frequency, uint16_t duration) {
     }
 }
 
+void nodding() {
+    for(int i = 0; i < 2; i++) {
+    float duration = 500;
+    float angle = 30;
+    float time = duration/angle;
+    for(int i = 0; i < 30; i++) {
+        servoTask2.setTarget(90-i, 0); //move to this angle
+        servoTask3.setTarget(90+i, 0);
+        delay(time);
+        }  
+    for(int i = 0; i < 30; i++) {
+        servoTask2.setTarget((90-angle)+i, 0); //move to this angle
+        servoTask3.setTarget((90+angle)-i, 0);
+        delay(time);
+        }
+    }
+}
+
 void playStartupTone() {
     playTone(587, 60);
     playTone(880, 60);
@@ -138,16 +156,27 @@ void loop() {
     radarTask.update();
 
     //get radar angle and send to servo.
-    int turn_angle = -radarTask.getAngle()+90;
-    servoTask1.moveTo(turn_angle);
-    servoTask2.moveTo(turn_angle);
+    float turn_angle = -radarTask.getAngle()+90; //
+    servoTask1.turn_head(turn_angle);
+    //82 degree center of head
+
+    //servoTask1.setTarget(82, 0);
+    //servoTask2.setTarget(90+angle, 0); //right audience reactor viewpoint //opposite from left
+    //servoTask3.setTarget(90-angle, 0); //left audience reactor viewpoint
     
-    static int count = count++; //this should be exhanged for when the command for nodding gets sendt from pi
-    if(count == 1000) {
-        servoTask2.nodding();
-        servoTask3.nodding();
-        count = 0;
-    }
     
-   
+    // int do_nod = 1;
+    // if(do_nod == 1) {
+    //     void nodding();
+    //     do_nod = 0;
+    // }
+    // delay(3000);
+
+    //nodding
+    // static int count = count++; //this should be exhanged for when the command for nodding gets sendt from pi
+    // if(count == 100) {
+    //     servoTask2.nodding();
+    //     servoTask3.nodding();
+    //     count = 0;
+    // }
 }
