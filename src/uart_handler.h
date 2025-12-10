@@ -6,11 +6,12 @@
 #include "tasks/pixel_task.h"
 #include "tasks/display_task.h"
 #include "tasks/radar_task.h"
+#include "tasks/body_color_task.h"
 
 class UartHandler {
 public:
     UartHandler();
-    void begin(IconTask *icons, ServoTask *s1=nullptr, ServoTask *s2=nullptr, ServoTask *s3=nullptr, PixelTask *pix=nullptr, DisplayTask *display=nullptr, RadarTask *radar=nullptr);
+    void begin(IconTask *icons, ServoTask *s1=nullptr, ServoTask *s2=nullptr, ServoTask *s3=nullptr, PixelTask *pix=nullptr, DisplayTask *display=nullptr, RadarTask *radar=nullptr, BodyColorTask *bodyColor=nullptr);
     void update();
 private:
     IconTask *icons = nullptr;
@@ -20,6 +21,7 @@ private:
     PixelTask *pixel = nullptr;
     DisplayTask *display = nullptr;
     RadarTask *radar = nullptr;
+    BodyColorTask *bodyColor = nullptr;
     static const int BUF_SZ = 128;
     char buf[BUF_SZ];
     int idx = 0;
@@ -28,5 +30,6 @@ private:
     void parseServoCommand(char *args);
     void parseTimerCommand(char *args);
     void parseTrackingCommand(char *args);
+    void parseBodyCommand(char *args);
     void trim(char *s);
 };

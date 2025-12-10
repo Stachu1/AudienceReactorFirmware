@@ -2,7 +2,7 @@
 
 UartHandler::UartHandler() {}
 
-void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pix, DisplayTask *display, RadarTask *radar) {
+void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pix, DisplayTask *display, RadarTask *radar, BodyColorTask *bodyColor) {
     this->icons = icons;
     this->servo1 = s1;
     this->servo2 = s2;
@@ -10,6 +10,7 @@ void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask
     this->pixel = pix;
     this->display = display;
     this->radar = radar;
+    this->bodyColor = bodyColor;
     idx = 0;
     memset(buf, 0, BUF_SZ);
 }
@@ -61,6 +62,9 @@ void UartHandler::handleLine(const char *line) {
     }
     else if (strncmp(tmp, "tracking", 8) == 0) {
         parseTrackingCommand(tmp+8);
+    }
+    else if (strncmp(tmp, "body", 4) == 0) {
+        parseBodyCommand(tmp+4);
     }
     else {
         Serial.print("Unknown command: ");
@@ -226,6 +230,62 @@ void UartHandler::parseTrackingCommand(char *args) {
         Serial.println("Use 'tracking on' or 'tracking off'\033[0m");
         if (pixel) pixel->setStatus(ERROR);
     }
+}
+
+void UartHandler::parseBodyCommand(char *args) {
+    // args: <color>
+    trim(args);
+    if (!bodyColor) {
+        Serial.println("\033[31mError: Body color task not configured\033[0m");
+        if (pixel) pixel->setStatus(ERROR);
+        return;
+    }
+    
+    uint8_t r=0, g=0, b=0;
+    
+    if (strcasecmp(args, "red") == 0) {
+        r=255; g=0; b=0;
+    }
+    else if (strcasecmp(args, "orange") == 0) {
+        r=255; g=100; b=0;
+    }
+    else if (strcasecmp(args, "yellow") == 0) {
+        r=255; g=255; b=0;
+    }
+    else if (strcasecmp(args, "green") == 0) {
+        r=0; g=255; b=0;
+    }
+    else if (strcasecmp(args, "cyan") == 0) {
+        r=0; g=255; b=255;
+    }
+    else if (strcasecmp(args, "blue") == 0) {
+        r=0; g=0; b=255;
+    }
+    else if (strcasecmp(args, "magenta") == 0) {
+        r=255; g=0; b=255;
+    }
+    else if (strcasecmp(args, "white") == 0) {
+        r=255; g=255; b=255;
+    }
+    else if (strcasecmp(args, "off") == 0 || strcasecmp(args, "clear") == 0) {
+        r=0; g=0; b=0;
+    }
+    else {
+        // try r,g,b
+        if (sscanf(args, "%d,%d,%d", (int*)&r, (int*)&g, (int*)&b) != 3) {
+            Serial.print("\033[31mError: Unknown color ");
+            Serial.println(args);
+            Serial.println("\033[0m");
+            if (pixel) pixel->setStatus(ERROR);
+            return;
+        }
+    }
+    
+    bodyColor->setColor(r, g, b);
+    Serial.print("Body color set to ");
+    Serial.print(r); Serial.print(",");
+    Serial.print(g); Serial.print(",");
+    Serial.println(b);
 }
 
 void UartHandler::trim(char *s) {

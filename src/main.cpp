@@ -114,7 +114,7 @@ void setup() {
     radarTask.begin(&Serial1, &servoTask1, 256000);
 
     // start UART handler and pass iconTask and servo tasks for commands
-    uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3, &pixelTask, &displayTask, &radarTask);
+    uartHandler.begin(&iconTask, &servoTask1, &servoTask2, &servoTask3, &pixelTask, &displayTask, &radarTask, &bodyColorTask);
 
     // initialize buzzer and play startup tone
     pinMode(BUZZER, OUTPUT);

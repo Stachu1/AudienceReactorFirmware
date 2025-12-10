@@ -6,7 +6,7 @@ class BodyColorTask {
 public:
     BodyColorTask();
     void begin(Adafruit_NeoPixel* strip, uint8_t iconCount);
-    void setColor(uint8_t r, uint8_t g, uint8_t b, uint16_t duration = 1000);
+    void setColor(uint8_t r, uint8_t g, uint8_t b, uint16_t duration = 500);
     void update();
 
 private:
@@ -17,6 +17,11 @@ private:
     uint8_t currentR;
     uint8_t currentG;
     uint8_t currentB;
+    
+    // Start color (color at beginning of transition)
+    uint8_t startR;
+    uint8_t startG;
+    uint8_t startB;
     
     // Target color (desired color)
     uint8_t targetR;
