@@ -7,6 +7,7 @@
 #include "tasks/pixel_task.h"
 #include "tasks/display_task.h"
 #include "tasks/radar_task.h"
+#include "tasks/body_color_task.h"
 #include "uart_handler.h"
 
 #define RGB_R 17
@@ -49,6 +50,7 @@ ServoTask servoTask2;
 ServoTask servoTask3;
 DisplayTask displayTask;
 RadarTask radarTask;
+BodyColorTask bodyColorTask;
 
 UartHandler uartHandler;
 
@@ -95,6 +97,7 @@ void setup() {
     // initialize pixel status task
     pixelTask.begin(&pixel);
     iconTask.begin(&strip, ICON_COUNT);
+    bodyColorTask.begin(&strip, ICON_COUNT);
     displayTask.begin(&display);
 
     // attach servos and start their tasks
@@ -133,6 +136,9 @@ void loop() {
 
     // update display task
     displayTask.update();
+
+    // update body color task
+    bodyColorTask.update();
 
     // update radar task
     radarTask.update();
