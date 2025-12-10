@@ -44,9 +44,15 @@ void DisplayTask::update() {
     }
 }
 
+void DisplayTask::show(uint32_t seconds) {
+    uint8_t minutes = (uint8_t)(seconds / 60);
+    display->showNumberDecEx((minutes * 100) + (uint8_t)(seconds % 60), 0b01000000, true);
+}
+
 void DisplayTask::setTime(uint32_t seconds) {
     targetSeconds = seconds;
     remainingSeconds = seconds;
+    show(seconds);
 }
 
 void DisplayTask::start() {

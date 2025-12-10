@@ -7,6 +7,7 @@ public:
     DisplayTask();
     void begin(TM1637Display* display, uint8_t brightness=7);
     void update();
+    void show(uint32_t seconds);
     void setTime(uint32_t seconds);
     void start();
     void stop();
