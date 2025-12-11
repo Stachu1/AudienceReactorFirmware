@@ -101,7 +101,7 @@ void setup() {
     displayTask.begin(&display);
 
     // attach servos and start their tasks
-    servo1.attach(SERVO1, 500, 2500);
+    servo1.attach(SERVO1, 500+222, 2500-444);
     servo2.attach(SERVO2, 500, 2500);
     servo3.attach(SERVO3, 500, 2500);
 

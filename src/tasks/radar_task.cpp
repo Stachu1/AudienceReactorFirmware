@@ -70,10 +70,14 @@ void RadarTask::update() {
     if (millistNow - lastUpdate > UPDATE_INTERVAL)
     {
         lastUpdate = millistNow;
-        uint8_t turn_angle = -getAngle() + TURN_OFFSET;
-        //uint8_t true_angle = angleCompensation(turn_angle);
-        servo_task->setTarget(turn_angle, UPDATE_INTERVAL);
+        float angle = angleCompensation();
+        servo_task->setTarget((uint8_t)angle, UPDATE_INTERVAL);
     }
+}
+
+float RadarTask::angleCompensation() {
+    float angle_rad = atan2(y + Y_OFFSET, x + X_OFFSET) - HALF_PI;
+    return angle_rad * RAD_TO_DEG + TURN_OFFSET;
 }
 
 bool RadarTask::parseData(const uint8_t* buf, uint32_t len) {
@@ -89,27 +93,20 @@ bool RadarTask::parseData(const uint8_t* buf, uint32_t len) {
 
     detected = !(raw_x == 0 && raw_y == 0 && raw_speed == 0 && raw_pixel_dist == 0);
 
-    // Correctly parse signed values
-    x = ((raw_x & 0x8000) ? 1 : -1) * (raw_x & 0x7FFF);
-    y = ((raw_y & 0x8000) ? 1 : -1) * (raw_y & 0x7FFF);
-    return true;
+    if (detected) {
+        x = ((raw_x & 0x8000) ? 1 : -1) * (raw_x & 0x7FFF);
+        y = ((raw_y & 0x8000) ? 1 : -1) * (raw_y & 0x7FFF);
+        return true;
+    }
+    return false;
 }
 
 float RadarTask::getAngle() {
-    if (detected) {
-        // Angle calculation (convert radians to degrees, then flip)
-        float angleRad = atan2(y, x) - (PI / 2);
-        float angleDeg = angleRad * (180.0 / PI);
-        return -angleDeg; // align angle with x measurement positive / negative sign
-    } else {
-        return 0.0;
-    }
+    float angleRad = atan2(y, x) - HALF_PI;
+    float angleDeg = angleRad * RAD_TO_DEG;
+    return -angleDeg;
 }
 
 float RadarTask::getDistance() {
-    if (detected) {
-        return sqrt((float)(x * x + y * y));
-    } else {
-        return 0.0;
-    }
+    return sqrt((float)(x * x + y * y));
 }
