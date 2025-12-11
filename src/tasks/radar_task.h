@@ -9,7 +9,7 @@ public:
     void update();
     float getAngle();
     float getDistance();
-    uint8_t angleCompensation(uint8_t);
+    float angleCompensation();
     
     int16_t x;
     int16_t y;
@@ -33,6 +33,8 @@ private:
     uint8_t buffer[30];
     uint32_t index;
     uint32_t lastUpdate;
-    int8_t TURN_OFFSET = 82;
-    uint16_t UPDATE_INTERVAL = 100; // milliseconds
+    const int8_t TURN_OFFSET = 85;        // degrees
+    const uint16_t UPDATE_INTERVAL = 30;  // milliseconds
+    const float X_OFFSET = 29.0f;         // mm
+    const float Y_OFFSET = 110.0f;        // mm
 };
