@@ -9,6 +9,7 @@ void ServoTask::begin(Servo *servo, uint8_t minAng, uint8_t maxAng) {
     currentAngle = (uint8_t)(minA + maxA) / 2.0f;
     targetAngle = currentAngle;
     startAngle = currentAngle;
+    lastUpdate = 0;
     moving = false;
     if (servo) servo->write((int)currentAngle);
 }
@@ -32,22 +33,16 @@ void ServoTask::setTarget(uint8_t angle, uint16_t duration) {
     }
 }
 
-void ServoTask::moveTo(uint8_t angle) {
-    int time = 25;
-    static int prev_angle = 90;
-        if(angle >= prev_angle) {
-        for(int i = prev_angle; i <= angle; i++) {
-            servo->write(i); //move to this angle
-            delay(time);
-            }  
-        }
-        else{
-            for(int i = prev_angle; i >= angle; i--) {
-                servo->write(i);
-                delay(time);
-            }
-        }
-        prev_angle = angle;
+void ServoTask::nodding(uint8_t angle) {
+    uint32_t millistNow = millis();
+    if(millistNow - lastUpdate >= UPDATE_INTERVAL/2) {
+        setTarget(angle, UPDATE_INTERVAL/2);
+    }
+    if (millistNow - lastUpdate >= UPDATE_INTERVAL) {
+        lastUpdate = millistNow;
+        setTarget(90, UPDATE_INTERVAL/2);
+    }
+
 }
 
 

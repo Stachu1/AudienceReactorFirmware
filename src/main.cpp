@@ -147,7 +147,7 @@ void loop() {
     pixelTask.update();
 
     // update servo tasks
-    servoTask1.update();
+    //servoTask1.update();
     servoTask2.update();
     servoTask3.update();
 
@@ -157,7 +157,8 @@ void loop() {
     // update radar task //updating radar values.
     radarTask.update();
 
-    //servoTask1.setTarget(82, 0);
-    //servoTask2.setTarget(90+angle, 0); //right audience reactor viewpoint //opposite from left
-    //servoTask3.setTarget(90-angle, 0); //left audience reactor viewpoint
+    //nodding
+    servoTask2.nodding(0);
+    servoTask3.nodding(180);
+
 }
