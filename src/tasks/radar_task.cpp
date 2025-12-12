@@ -16,6 +16,7 @@ void RadarTask::begin(HardwareSerial* serial, ServoTask* turn_task, uint32_t bau
     state = WAIT_AA; //wait for start command from radar?
     index = 0;
     lastUpdate = 0;
+    lastUpdate = 0;
 }
 
 void RadarTask::update() {
@@ -62,6 +63,14 @@ void RadarTask::update() {
                 }
                 break;
         }
+    }
+    uint32_t millistNow = millis();
+    if (millistNow - lastUpdate > UPDATE_INTERVAL)
+    {
+        lastUpdate = millistNow;
+        uint8_t turn_angle = -getAngle() + TURN_OFFSET;
+        //uint8_t true_angle = angleCompensation(turn_angle);
+        turn_task->setTarget(turn_angle, UPDATE_INTERVAL);
     }
     uint32_t millistNow = millis();
     if (millistNow - lastUpdate > UPDATE_INTERVAL)

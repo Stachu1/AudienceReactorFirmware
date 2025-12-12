@@ -32,7 +32,4 @@ private:
     State state;
     uint8_t buffer[30];
     uint32_t index;
-    uint32_t lastUpdate;
-    int8_t TURN_OFFSET = 82;
-    uint16_t UPDATE_INTERVAL = 25;
 };
