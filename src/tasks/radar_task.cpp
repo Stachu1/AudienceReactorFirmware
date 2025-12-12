@@ -16,7 +16,6 @@ void RadarTask::begin(HardwareSerial* serial, ServoTask* turn_task, uint32_t bau
     state = WAIT_AA; //wait for start command from radar?
     index = 0;
     lastUpdate = 0;
-    lastUpdate = 0;
 }
 
 void RadarTask::update() {
