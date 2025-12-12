@@ -1,4 +1,5 @@
 #include "pixel_task.h"
+#include <hardware/watchdog.h>
 
 PixelTask::PixelTask() {}
 
@@ -65,7 +66,12 @@ void PixelTask::update() {
             // solid red
             pixel->setPixelColor(0, pixel->Color(255, 0, 0));
             pixel->show();
-            while(1); // halt
+            playErrorTone();
+            delay(3000);
+
+            // Reboot the MCU
+            watchdog_enable(1, 1);
+            while(1);
         }
     }
     pixel->show();

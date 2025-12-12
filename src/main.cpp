@@ -9,6 +9,7 @@
 #include "tasks/radar_task.h"
 #include "tasks/body_color_task.h"
 #include "uart_handler.h"
+#include "buzzer.h"
 
 #define RGB_R 17
 #define RGB_G 16
@@ -24,8 +25,6 @@
 #define SERVO1 3
 #define SERVO2 4
 #define SERVO3 2
-
-#define BUZZER 28
 
 #define TM1637_CLK 27
 #define TM1637_DIO 26
@@ -53,28 +52,6 @@ RadarTask radarTask;
 BodyColorTask bodyColorTask;
 
 UartHandler uartHandler;
-
-void playTone(uint16_t frequency, uint16_t duration) {
-    if (frequency == 0) {
-        delay(duration);
-        return;
-    }
-    uint16_t halfPeriod = 1000000U / frequency / 2;
-    uint16_t cycles = (uint16_t)frequency * duration / 1000;
-    for (uint16_t i = 0; i < cycles; i++) {
-        digitalWrite(BUZZER, HIGH);
-        delayMicroseconds(halfPeriod);
-        digitalWrite(BUZZER, LOW);
-        delayMicroseconds(halfPeriod);
-    }
-}
-
-void playStartupTone() {
-    playTone(587, 60);
-    playTone(880, 60);
-    playTone(0, 10);
-    playTone(1175, 110);
-}
 
 void setup() {
     Serial.begin(115200);
@@ -118,7 +95,6 @@ void setup() {
 
     // initialize buzzer and play startup tone
     pinMode(BUZZER, OUTPUT);
-    digitalWrite(BUZZER, LOW);
     playStartupTone();
 }
 

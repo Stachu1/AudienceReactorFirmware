@@ -2,20 +2,32 @@
 
 UartHandler::UartHandler() {}
 
-void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pix, DisplayTask *display, RadarTask *radar, BodyColorTask *bodyColor) {
+void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pixel, DisplayTask *display, RadarTask *radar, BodyColorTask *bodyColor) {
     this->icons = icons;
     this->servo1 = s1;
     this->servo2 = s2;
     this->servo3 = s3;
-    this->pixel = pix;
+    this->pixel = pixel;
     this->display = display;
     this->radar = radar;
     this->bodyColor = bodyColor;
     idx = 0;
     memset(buf, 0, BUF_SZ);
+    tickCounter = 0;
+    lastTpsUpdate = millis();
+    tps = 0;
 }
 
 void UartHandler::update() {
+    // Update TPS counter
+    tickCounter++;
+    uint32_t now = millis();
+    if (now - lastTpsUpdate >= 1000) {
+        tps = tickCounter;
+        tickCounter = 0;
+        lastTpsUpdate = now;
+    }
+    
     while (Serial.available()) {
         uint8_t c = (uint8_t)Serial.read();
         if (c == '\r') continue;
@@ -65,6 +77,9 @@ void UartHandler::handleLine(const char *line) {
     }
     else if (strncmp(tmp, "body", 4) == 0) {
         parseBodyCommand(tmp+4);
+    }
+    else if (strncmp(tmp, "tps", 3) == 0) {
+        parseTpsCommand(tmp+3);
     }
     else {
         Serial.print("Unknown command: ");
@@ -218,10 +233,14 @@ void UartHandler::parseTrackingCommand(char *args) {
 
     if (strcasecmp(args, "on") == 0) {
         radar->tracking = true;
+        pixel->setStatus(TRACKING);
+        playTrackingOnTone();
         Serial.println("Radar tracking enabled");
     }
     else if (strcasecmp(args, "off") == 0) {
         radar->tracking = false;
+         pixel->setStatus(IDLE);
+         playTrackingOffTone();
         Serial.println("Radar tracking disabled");
     }
     else {
@@ -286,6 +305,11 @@ void UartHandler::parseBodyCommand(char *args) {
     Serial.print(r); Serial.print(",");
     Serial.print(g); Serial.print(",");
     Serial.println(b);
+}
+
+void UartHandler::parseTpsCommand(char *args) {
+    Serial.print(tps);
+    Serial.println(" ticks/sec");
 }
 
 void UartHandler::trim(char *s) {

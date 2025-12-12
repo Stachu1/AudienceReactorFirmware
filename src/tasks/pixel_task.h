@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
+#include "buzzer.h"
 
 #define RGB_R 17
 #define RGB_G 16

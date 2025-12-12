@@ -7,6 +7,7 @@
 #include "tasks/display_task.h"
 #include "tasks/radar_task.h"
 #include "tasks/body_color_task.h"
+#include "buzzer.h"
 
 class UartHandler {
 public:
@@ -25,11 +26,17 @@ private:
     static const int BUF_SZ = 128;
     char buf[BUF_SZ];
     int idx = 0;
+    
+    // TPS tracking
+    uint32_t tickCounter = 0;
+    uint32_t lastTpsUpdate = 0;
+    uint32_t tps = 0;
     void handleLine(const char *line);
     void parseIconCommand(char *args);
     void parseServoCommand(char *args);
     void parseTimerCommand(char *args);
     void parseTrackingCommand(char *args);
     void parseBodyCommand(char *args);
+    void parseTpsCommand(char *args);
     void trim(char *s);
 };
