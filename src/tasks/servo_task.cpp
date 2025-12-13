@@ -33,21 +33,18 @@ void ServoTask::setTarget(uint8_t angle, uint16_t duration) {
     }
 }
 
-void ServoTask::nodding(uint8_t angle) {
-    uint32_t now = millis();
-    uint16_t half = UPDATE_INTERVAL / 2;
+void ServoTask::nodOnce(uint8_t angle, uint16_t moveMs, uint16_t pauseMs) {
+    // Starts and restarts a nod
+    nodAngle = angle;
+    nodMoveMs = moveMs;
+    nodPauseMs = pauseMs;
 
-    // only change target once per half interval
-    if (now - nodLast < half) return;
-    nodLast = now;
+    nodState = NOD_OUT;
+    nodT0 = millis();
 
-    if (nodOut) {
-        setTarget(angle, half);
-    } else {
-        setTarget(100, half);
-    }
-    nodOut = !nodOut;
+    setTarget(nodAngle, nodMoveMs); // From origin to nod
 }
+
 
 void ServoTask::update() {
     if (!servo) return;
@@ -66,6 +63,33 @@ void ServoTask::update() {
             servo->write((int)ang);
         }
         return;
+    }
+    // Nodding States tracking
+    if (nodState == NOD_IDLE) return;
+
+    // Having this here allows for stage checking and advancing
+    if (moving) return;
+
+    switch (nodState) {
+        case NOD_OUT:
+            nodState = NOD_BACK;
+            setTarget(90, nodMoveMs);      // angle -> 90
+            break;
+
+        case NOD_BACK:
+            nodState = NOD_PAUSE;
+            nodT0 = now;                   // start pause timer at 90
+            break;
+
+        case NOD_PAUSE:
+            if (now - nodT0 >= nodPauseMs) {
+                nodState = NOD_IDLE;       // finished one nod
+            }
+            break;
+
+        default:
+            nodState = NOD_IDLE;
+            break;
     }
 }
 
