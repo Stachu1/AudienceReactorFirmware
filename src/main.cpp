@@ -120,8 +120,9 @@ void loop() {
     radarTask.update();
 
     //Check for nodding/nodding
+    static int LUL = 0;
     if(LUL == true) {
-        servoTask2.nodding();
-        servoTask3.nodding();
+        servoTask2.nodding(180);
+        servoTask3.nodding(0);
     }
 }
