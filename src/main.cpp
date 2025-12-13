@@ -118,4 +118,10 @@ void loop() {
 
     // update radar task
     radarTask.update();
+
+    //Check for nodding/nodding
+    if(LUL == true) {
+        servoTask2.nodding();
+        servoTask3.nodding();
+    }
 }
