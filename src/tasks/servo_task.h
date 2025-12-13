@@ -8,7 +8,7 @@ public:
     void begin(Servo *servo, uint8_t minAng=0, uint8_t maxAng=180);
     void update();
     void setTarget(uint8_t angle, uint16_t duration=0);
-    void nodding(uint8_t angle);
+    bool nodding(uint8_t angle, bool nod);
 
 private:
     Servo *servo = nullptr;
@@ -23,5 +23,6 @@ private:
     uint16_t moveDuration = 0;
     uint32_t lastUpdate;
     uint16_t UPDATE_INTERVAL = 1000;
+    bool nod = false;
     bool moving = false;
 };
