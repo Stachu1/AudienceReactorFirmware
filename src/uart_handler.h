@@ -38,5 +38,6 @@ private:
     void parseTrackingCommand(char *args);
     void parseBodyCommand(char *args);
     void parseTpsCommand(char *args);
+    void parseNodCommand(char *args);
     void trim(char *s);
 };
