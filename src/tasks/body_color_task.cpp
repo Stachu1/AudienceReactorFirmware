@@ -17,6 +17,7 @@ void BodyColorTask::setColor(const String& colorName) {
     if (colorName == "average") color = CRGB::Yellow;
     else if (colorName == "good") color = CRGB::Green;
     else if (colorName == "extreme") color = CRGB::Red;
+    else if (colorName == "idle") color = CRGB::White;
 
     for (int i = iconCount; i < numLEDs; i++) {
         leds[i] = color;

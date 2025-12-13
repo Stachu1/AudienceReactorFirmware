@@ -200,10 +200,10 @@ void UartHandler::parseBodyCommand(char *args) {
         if (pixel) pixel->setStatus(PixelStatus::ERROR);
         return;
     }
-    if (strcmp(args, "average") != 0 && strcmp(args, "good") != 0 && strcmp(args, "extreme") != 0) {
+    if (strcmp(args, "average") != 0 && strcmp(args, "good") != 0 && strcmp(args, "extreme") != 0 && strcmp(args, "idle") != 0) {
         Serial.print("\033[31mError: Invalid body color command: ");
         Serial.println(args);
-        Serial.println("Use 'body average', 'body good' or 'body extreme'\033[0m");
+        Serial.println("Use 'body idle', body average', 'body good' or 'body extreme'\033[0m");
         if (pixel) pixel->setStatus(PixelStatus::ERROR);
         return;
     }
