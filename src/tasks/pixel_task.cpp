@@ -5,7 +5,7 @@ PixelTask::PixelTask() {}
 
 void PixelTask::begin(Adafruit_NeoPixel *pixel) {
     this->pixel = pixel;
-    status = IDLE;
+    status = PixelStatus::IDLE;
     lastUpdate = 0;
     phase = 0.0f;
     uartBlinkStart = 0;
@@ -21,7 +21,7 @@ void PixelTask::setStatus(PixelStatus status) {
 
 void PixelTask::triggerUartBlink() {
     previousStatus = status;
-    status = UART;
+    status = PixelStatus::UART;
     uartBlinkStart = millis();
 }
 
@@ -31,7 +31,7 @@ void PixelTask::update() {
     
     // handle different status modes
     switch (status) {
-        case IDLE: {
+        case PixelStatus::IDLE: {
             // green breathing effect
             phase += (now - lastUpdate) / 160.0f;
             if (phase > TWO_PI) phase -= TWO_PI;
@@ -40,7 +40,7 @@ void PixelTask::update() {
             break;
         }
         
-        case UART: {
+        case PixelStatus::UART: {
             // solid blue
             uint32_t elapsed = now - uartBlinkStart;
             if (elapsed < UART_BLINK_DURATION) {
@@ -53,7 +53,7 @@ void PixelTask::update() {
             break;
         }
 
-        case TRACKING: {
+        case PixelStatus::TRACKING: {
             // orange breathing effect
             phase += (now - lastUpdate) / 40.0f;
             if (phase > TWO_PI) phase -= TWO_PI;
@@ -62,7 +62,7 @@ void PixelTask::update() {
             break;
         }
             
-        case ERROR: {
+        case PixelStatus::ERROR: {
             // solid red
             pixel->setPixelColor(0, pixel->Color(255, 0, 0));
             pixel->show();

@@ -7,7 +7,7 @@
 #define RGB_G 16
 #define RGB_B 25
 
-enum PixelStatus {
+enum class PixelStatus {
     IDLE,      // green breathing
     UART,      // blue blink
     TRACKING,  // orange breathing
@@ -24,8 +24,8 @@ public:
 
 private:
     Adafruit_NeoPixel *pixel = nullptr;
-    PixelStatus status = IDLE;
-    PixelStatus previousStatus = IDLE;
+    PixelStatus status = PixelStatus::IDLE;
+    PixelStatus previousStatus = PixelStatus::IDLE;
     uint32_t lastUpdate;
     float phase;
     uint32_t uartBlinkStart;

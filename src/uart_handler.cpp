@@ -47,7 +47,7 @@ void UartHandler::update() {
             else {
                 // buffer overflow error
                 Serial.println("\033[31mError: UART command buffer overflow\033[0m");
-                if (pixel) pixel->setStatus(ERROR);
+                if (pixel) pixel->setStatus(PixelStatus::ERROR);
                 return;
             }
         }
@@ -125,7 +125,7 @@ void UartHandler::parseServoCommand(char *args) {
         Serial.print("\033[31mError: Servo ");
         Serial.print(id);
         Serial.println(" not configured");
-        if (pixel) pixel->setStatus(ERROR);
+        if (pixel) pixel->setStatus(PixelStatus::ERROR);
         return;
     }
     st->setTarget((int16_t)angle, dur);
@@ -168,19 +168,19 @@ void UartHandler::parseTrackingCommand(char *args) {
     trim(args);
     if (!radar) {
         Serial.println("\033[31mError: Radar not configured\033[0m");
-        if (pixel) pixel->setStatus(ERROR);
+        if (pixel) pixel->setStatus(PixelStatus::ERROR);
         return;
     }
 
     if (strcasecmp(args, "on") == 0) {
         radar->tracking = true;
-        pixel->setStatus(TRACKING);
+        pixel->setStatus(PixelStatus::TRACKING);
         playTrackingOnTone();
         Serial.println("Radar tracking enabled");
     }
     else if (strcasecmp(args, "off") == 0) {
         radar->tracking = false;
-         pixel->setStatus(IDLE);
+         pixel->setStatus(PixelStatus::IDLE);
          playTrackingOffTone();
         Serial.println("Radar tracking disabled");
     }
@@ -188,7 +188,7 @@ void UartHandler::parseTrackingCommand(char *args) {
         Serial.print("\033[31mError: Invalid tracking command: ");
         Serial.println(args);
         Serial.println("Use 'tracking on' or 'tracking off'\033[0m");
-        if (pixel) pixel->setStatus(ERROR);
+        if (pixel) pixel->setStatus(PixelStatus::ERROR);
     }
 }
 
@@ -197,14 +197,14 @@ void UartHandler::parseBodyCommand(char *args) {
     trim(args);
     if (!bodyColor) {
         Serial.println("\033[31mError: Body color task not configured\033[0m");
-        if (pixel) pixel->setStatus(ERROR);
+        if (pixel) pixel->setStatus(PixelStatus::ERROR);
         return;
     }
     if (strcmp(args, "average") != 0 && strcmp(args, "good") != 0 && strcmp(args, "extreme") != 0) {
         Serial.print("\033[31mError: Invalid body color command: ");
         Serial.println(args);
         Serial.println("Use 'body average', 'body good' or 'body extreme'\033[0m");
-        if (pixel) pixel->setStatus(ERROR);
+        if (pixel) pixel->setStatus(PixelStatus::ERROR);
         return;
     }
     bodyColor->setColor(String(args));
@@ -219,12 +219,12 @@ void UartHandler::parseTpsCommand(char *args) {
 void UartHandler::parseNodCommand(char *args) {
     if (!servo2 || !servo3) {
         Serial.println("\033[31mError: Servo tasks not configured\033[0m");
-        if (pixel) pixel->setStatus(ERROR);
+        if (pixel) pixel->setStatus(PixelStatus::ERROR);
         return;
     }
     
-    servo2->nod(20, 500, 0);
-    servo3->nod(160, 500, 0);
+    servo2->nod(20, 500);
+    servo3->nod(160, 500);
     Serial.println("Nod triggered");
 }
 

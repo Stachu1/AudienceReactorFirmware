@@ -3,7 +3,7 @@
 #include <Servo.h>
 
 
-enum NodState {
+enum class NodState {
     IDLE,
     OUT,
     BACK,
