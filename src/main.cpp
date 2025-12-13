@@ -18,7 +18,7 @@
 #define NEO_PWR 11
 #define NEO 12
 #define NUMPIXELS 1
-#define DATA_PIN 7
+#define STRIP_PIN 7
 
 
 #define ICON_COUNT 5
@@ -52,7 +52,7 @@ IconTask iconTask;
 ServoTask servoTask1;
 ServoTask servoTask2;
 ServoTask servoTask3;
-DisplayTask displayTask;
+TimerDisplayTask displayTask;
 RadarTask radarTask;
 BodyColorTask bodyColorTask;
 
@@ -80,7 +80,7 @@ void setup() {
     displayTask.begin(&display);
 
     //initialize LED strip
-    FastLED.addLeds<WS2816, DATA_PIN,GRB>(leds,NUM_LEDS);
+    FastLED.addLeds<WS2816, STRIP_PIN,GRB>(leds,NUM_LEDS);
     FastLED.setBrightness(128);
     iconTask.begin(leds, ICON_COUNT);
     bodyColorTask.begin(leds,NUM_LEDS, ICON_COUNT);
@@ -126,6 +126,4 @@ void loop() {
 
     // update radar task
     radarTask.update();
-
-    //all other things are updated when serial commands are received
 }

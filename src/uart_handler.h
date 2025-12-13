@@ -12,7 +12,7 @@
 class UartHandler {
 public:
     UartHandler();
-    void begin(IconTask *icons, ServoTask *s1=nullptr, ServoTask *s2=nullptr, ServoTask *s3=nullptr, PixelTask *pix=nullptr, DisplayTask *display=nullptr, RadarTask *radar=nullptr, BodyColorTask *bodyColor=nullptr);
+    void begin(IconTask *icons, ServoTask *s1=nullptr, ServoTask *s2=nullptr, ServoTask *s3=nullptr, PixelTask *pix=nullptr, TimerDisplayTask *display=nullptr, RadarTask *radar=nullptr, BodyColorTask *bodyColor=nullptr);
     void update();
 private:
     IconTask *icons = nullptr;
@@ -20,7 +20,7 @@ private:
     ServoTask *servo2 = nullptr;
     ServoTask *servo3 = nullptr;
     PixelTask *pixel = nullptr;
-    DisplayTask *display = nullptr;
+    TimerDisplayTask *display = nullptr;
     RadarTask *radar = nullptr;
     BodyColorTask *bodyColor = nullptr;
     static const int BUF_SZ = 128;
