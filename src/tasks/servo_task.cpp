@@ -32,6 +32,13 @@ void ServoTask::setTarget(uint8_t angle, uint16_t duration) {
     }
 }
 
+void ServoTask::nod(uint8_t angle, uint16_t move_ms) {
+    nodMoveTime = move_ms;
+    nodState = NodState::OUT;
+    setTarget(angle, nodMoveTime);
+}
+
+
 void ServoTask::update() {
     if (!servo) return;
     uint32_t now = millis();
@@ -50,4 +57,18 @@ void ServoTask::update() {
         }
         return;
     }
+
+    if (nodState == NodState::IDLE || moving) return;
+
+    switch (nodState) {
+        case NodState::OUT:
+            nodState = NodState::BACK;
+            setTarget(90, nodMoveTime);
+            break;
+
+        case NodState::BACK:
+            nodState = NodState::IDLE;
+            break;
+    }
 }
+

@@ -81,6 +81,9 @@ void UartHandler::handleLine(const char *line) {
     else if (strncmp(tmp, "tps", 3) == 0) {
         parseTpsCommand(tmp+3);
     }
+    else if (strncmp(tmp, "nod", 3) == 0) {
+        parseNodCommand(tmp+3);
+    }
     else {
         Serial.print("Unknown command: ");
         Serial.println(tmp);
@@ -197,6 +200,13 @@ void UartHandler::parseBodyCommand(char *args) {
         if (pixel) pixel->setStatus(ERROR);
         return;
     }
+    if (strcmp(args, "average") != 0 && strcmp(args, "good") != 0 && strcmp(args, "extreme") != 0) {
+        Serial.print("\033[31mError: Invalid body color command: ");
+        Serial.println(args);
+        Serial.println("Use 'body average', 'body good' or 'body extreme'\033[0m");
+        if (pixel) pixel->setStatus(ERROR);
+        return;
+    }
     bodyColor->setColor(String(args));
 
 }
@@ -204,6 +214,18 @@ void UartHandler::parseBodyCommand(char *args) {
 void UartHandler::parseTpsCommand(char *args) {
     Serial.print(tps);
     Serial.println(" ticks/sec");
+}
+
+void UartHandler::parseNodCommand(char *args) {
+    if (!servo2 || !servo3) {
+        Serial.println("\033[31mError: Servo tasks not configured\033[0m");
+        if (pixel) pixel->setStatus(ERROR);
+        return;
+    }
+    
+    servo2->nod(20, 500, 0);
+    servo3->nod(160, 500, 0);
+    Serial.println("Nod triggered");
 }
 
 void UartHandler::trim(char *s) {
