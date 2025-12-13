@@ -24,4 +24,6 @@ private:
     uint16_t UPDATE_INTERVAL = 4000;
     uint32_t lastUpdate;
     bool moving = false;
+    bool nodOut = true;      // toggle for nod angle and 90
+    uint32_t nodLast = 0;    // timing for nod steps
 };

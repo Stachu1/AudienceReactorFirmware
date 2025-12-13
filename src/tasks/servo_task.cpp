@@ -34,17 +34,20 @@ void ServoTask::setTarget(uint8_t angle, uint16_t duration) {
 }
 
 void ServoTask::nodding(uint8_t angle) {
-    uint32_t millistNow = millis();
-    if(millistNow - lastUpdate >= UPDATE_INTERVAL/2) {
-        setTarget(angle, UPDATE_INTERVAL/2);
-    }
-    if (millistNow - lastUpdate >= UPDATE_INTERVAL) {
-        lastUpdate = millistNow;
-        setTarget(90, UPDATE_INTERVAL/2);
-    }
+    uint32_t now = millis();
+    uint16_t half = UPDATE_INTERVAL / 2;
 
+    // only change target once per half interval
+    if (now - nodLast < half) return;
+    nodLast = now;
+
+    if (nodOut) {
+        setTarget(angle, half);
+    } else {
+        setTarget(100, half);
+    }
+    nodOut = !nodOut;
 }
-
 
 void ServoTask::update() {
     if (!servo) return;

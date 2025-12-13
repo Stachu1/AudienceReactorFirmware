@@ -67,23 +67,6 @@ void playTone(uint16_t frequency, uint16_t duration) {
     }
 }
 
-void nodding() {
-    for(int i = 0; i < 2; i++) {
-    float duration = 500;
-    float angle = 30;
-    float time = duration/angle;
-    for(int i = 0; i < 30; i++) {
-        servoTask2.setTarget(90-i, 0); //move to this angle
-        servoTask3.setTarget(90+i, 0);
-        delay(time);
-        }  
-    for(int i = 0; i < 30; i++) {
-        servoTask2.setTarget((90-angle)+i, 0); //move to this angle
-        servoTask3.setTarget((90+angle)-i, 0);
-        delay(time);
-        }
-    }
-}
 
 void playStartupTone() {
     playTone(587, 60);
@@ -158,7 +141,7 @@ void loop() {
     radarTask.update();
 
     //nodding
-    servoTask2.nodding(0);
-    servoTask3.nodding(180);
+    servoTask2.nodding(20);
+    servoTask3.nodding(160);
 
 }
