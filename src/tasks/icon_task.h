@@ -1,9 +1,9 @@
 #pragma once
 #include <FastLED.h>
 
-class IconColorTask {
+class IconTask {
 public:
-    IconColorTask();
+    IconTask();
 
     void begin(CRGB* leds, int iconCount);
     void setIcon(const String& iconName);

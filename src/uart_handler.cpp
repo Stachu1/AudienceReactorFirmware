@@ -2,7 +2,7 @@
 
 UartHandler::UartHandler() {}
 
-void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pixel, DisplayTask *display, RadarTask *radar, BodyColorTask *bodyColor) {
+void UartHandler::begin(IconTask *icons, ServoTask *s1, ServoTask *s2, ServoTask *s3, PixelTask *pixel, TimerDisplayTask *display, RadarTask *radar, BodyColorTask *bodyColor) {
     this->icons = icons;
     this->servo1 = s1;
     this->servo2 = s2;
@@ -88,7 +88,7 @@ void UartHandler::handleLine(const char *line) {
 }
 
 void UartHandler::parseIconCommand(char *args) {
-    // args: " <index> <color> [<blink_interval>]"
+    // args: " <index>
     trim(args);
     if (!icons) return;
     char *tok = strtok(args, " \t");
@@ -97,14 +97,6 @@ void UartHandler::parseIconCommand(char *args) {
     tok = strtok(NULL, " \t");
     if (!tok) return;
     icons->setIcon(args);
-
-    // get optional blink interval
-    char *blinkTok = strtok(NULL, " \t");
-    uint16_t blinkInterval = 0;
-    if (blinkTok) {
-        blinkInterval = (uint16_t)atoi(blinkTok);
-    }
-
 }
 
 void UartHandler::parseServoCommand(char *args) {
@@ -139,7 +131,7 @@ void UartHandler::parseServoCommand(char *args) {
 }
 
 void UartHandler::parseTimerCommand(char *args) {
-    // args: <seconds>|start|stop|brightness <0-7>
+    // args: <seconds>|start <seconds>|stop
     trim(args);
     if (strncmp(args, "start", 5) == 0) {
         // start timer
@@ -160,7 +152,7 @@ void UartHandler::parseTimerCommand(char *args) {
     else {
         // set time
         int seconds = atoi(args);
-        extern DisplayTask displayTask;
+        extern TimerDisplayTask displayTask;
         displayTask.show((uint32_t)seconds*1000UL);
         Serial.print("Timer set to ");
         Serial.print(seconds);
