@@ -223,8 +223,8 @@ void UartHandler::parseNodCommand(char *args) {
         return;
     }
     
-    servo2->nodOnce(20, 500, 0);
-    servo3->nodOnce(160, 500, 0);
+    servo2->nod(20, 500, 0);
+    servo3->nod(160, 500, 0);
     Serial.println("Nod triggered");
 }
 

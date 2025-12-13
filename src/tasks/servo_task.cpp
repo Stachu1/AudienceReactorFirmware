@@ -9,7 +9,6 @@ void ServoTask::begin(Servo *servo, uint8_t minAng, uint8_t maxAng) {
     currentAngle = (uint8_t)(minA + maxA) / 2.0f;
     targetAngle = currentAngle;
     startAngle = currentAngle;
-    lastUpdate = 0;
     moving = false;
     if (servo) servo->write((int)currentAngle);
 }
@@ -33,16 +32,10 @@ void ServoTask::setTarget(uint8_t angle, uint16_t duration) {
     }
 }
 
-void ServoTask::nodOnce(uint8_t angle, uint16_t moveMs, uint16_t pauseMs) {
-    // Starts and restarts a nod
-    nodAngle = angle;
-    nodMoveMs = moveMs;
-    nodPauseMs = pauseMs;
-
-    nodState = NOD_OUT;
-    nodT0 = millis();
-
-    setTarget(nodAngle, nodMoveMs); // From origin to nod
+void ServoTask::nod(uint8_t angle, uint16_t move_ms) {
+    nodMoveTime = move_ms;
+    nodState = NodState::OUT;
+    setTarget(angle, nodMoveTime);
 }
 
 
@@ -64,31 +57,17 @@ void ServoTask::update() {
         }
         return;
     }
-    // Nodding States tracking
-    if (nodState == NOD_IDLE) return;
 
-    // Having this here allows for stage checking and advancing
-    if (moving) return;
+    if (nodState == NodState::IDLE || moving) return;
 
     switch (nodState) {
-        case NOD_OUT:
-            nodState = NOD_BACK;
-            setTarget(90, nodMoveMs);      // angle -> 90
+        case NodState::OUT:
+            nodState = NodState::BACK;
+            setTarget(90, nodMoveTime);
             break;
 
-        case NOD_BACK:
-            nodState = NOD_PAUSE;
-            nodT0 = now;                   // start pause timer at 90
-            break;
-
-        case NOD_PAUSE:
-            if (now - nodT0 >= nodPauseMs) {
-                nodState = NOD_IDLE;       // finished one nod
-            }
-            break;
-
-        default:
-            nodState = NOD_IDLE;
+        case NodState::BACK:
+            nodState = NodState::IDLE;
             break;
     }
 }
