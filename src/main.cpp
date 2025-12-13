@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
+#include <FastLED.h>
 #include <Servo.h>
 #include <TM1637Display.h>
 #include "tasks/icon_task.h"
@@ -17,10 +18,12 @@
 #define NEO_PWR 11
 #define NEO 12
 #define NUMPIXELS 1
-#define STRIP 7
-#define STRIP_LEN 100
+#define DATA_PIN 7
+
 
 #define ICON_COUNT 5
+#define NUM_LEDS 300
+#define ICON_COUNT 10
 
 #define SERVO1 3
 #define SERVO2 4
@@ -31,7 +34,9 @@
 
 
 Adafruit_NeoPixel pixel(1, NEO, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel strip(STRIP_LEN, STRIP, NEO_GRB + NEO_KHZ800);
+
+//LED Strip
+CRGB leds[NUM_LEDS];
 
 // TM1637 Display
 TM1637Display display(TM1637_CLK, TM1637_DIO);
@@ -68,14 +73,20 @@ void setup() {
 
     pixel.begin();
     pixel.setBrightness(50);
-    strip.begin();
-    strip.setBrightness(55);
+
 
     // initialize pixel status task
     pixelTask.begin(&pixel);
-    iconTask.begin(&strip, ICON_COUNT);
-    bodyColorTask.begin(&strip, ICON_COUNT);
     displayTask.begin(&display);
+
+    //initialize LED strip
+    FastLED.addLeds<WS2816, DATA_PIN,GRB>(leds,NUM_LEDS);
+    FastLED.setBrightness(128);
+    iconTask.begin(leds, ICON_COUNT);
+    bodyColorTask.begin(leds,NUM_LEDS, ICON_COUNT);
+    displayTask.begin(&display);
+    bodyColorTask.setColor("idle");
+    Serial.print("BodyColor set idle");
 
     // attach servos and start their tasks
     servo1.attach(SERVO1, 500+222, 2500-444);
@@ -113,9 +124,8 @@ void loop() {
     // update display task
     displayTask.update();
 
-    // update body color task
-    bodyColorTask.update();
-
     // update radar task
     radarTask.update();
+
+    //all other things are updated when serial commands are received
 }

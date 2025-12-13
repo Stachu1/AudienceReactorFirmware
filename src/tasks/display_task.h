@@ -2,23 +2,23 @@
 #include <Arduino.h>
 #include <TM1637Display.h>
 
-class DisplayTask {    
+class TimerDisplayTask {
 public:
-    DisplayTask();
-    void begin(TM1637Display* display, uint8_t brightness=7);
-    void update();
-    void show(uint32_t seconds);
-    void setTime(uint32_t seconds);
-    void start();
+    TimerDisplayTask();
+
+    void begin(TM1637Display* display);
+    void start(unsigned long durationMs);
+    void show(unsigned long durationMs);
     void stop();
-    void setBrightness(uint8_t brightness);
-    bool timer_running;
+    void update();
+
 
 private:
-    TM1637Display* display = nullptr;
-    uint32_t targetSeconds;
-    uint32_t remainingSeconds;
-    uint32_t startTime;
-    uint32_t lastBlinkTime;
-    bool colonOn;
+    TM1637Display* display;
+    unsigned long start_Time;
+    unsigned long duration;
+    unsigned long lastUpdate;
+    unsigned long Timer;
+    unsigned long last_current_time;
+    int8_t TimeDisp[4]= {0,0,0,0};
 };
