@@ -63,9 +63,9 @@ void RadarTask::update() {
                 break;
         }
     }
-    if (!tracking) {
-        return;
-    }
+    // if (!tracking) {
+    //     return;          //seems to break the tracking, figure it out
+    // }
     uint32_t millistNow = millis();
     if (millistNow - lastUpdate > UPDATE_INTERVAL)
     {

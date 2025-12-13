@@ -32,6 +32,8 @@
 #define TM1637_CLK 27
 #define TM1637_DIO 26
 
+bool nod1 = true; //change this dependent on input
+bool nod2 = true; //change this dependent on input
 
 Adafruit_NeoPixel pixel(1, NEO, NEO_GRB + NEO_KHZ800);
 
@@ -126,4 +128,12 @@ void loop() {
 
     // update radar task
     radarTask.update();
+
+    // NoddingCheck for nodding
+    static uint32_t callNod = 1; // test for call
+if(callNod == 1){
+    servoTask2.nodOnce(20, 500, 0);
+    servoTask3.nodOnce(160, 500, 0);
+    callNod = 0;
+    }
 }
