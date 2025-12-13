@@ -96,7 +96,8 @@ void UartHandler::parseIconCommand(char *args) {
     int idx = atoi(tok);
     tok = strtok(NULL, " \t");
     if (!tok) return;
-    
+    icons->setIcon(args);
+
     // get optional blink interval
     char *blinkTok = strtok(NULL, " \t");
     uint16_t blinkInterval = 0;
@@ -104,52 +105,6 @@ void UartHandler::parseIconCommand(char *args) {
         blinkInterval = (uint16_t)atoi(blinkTok);
     }
 
-    // parse color
-    uint8_t r=0, g=0, b=0;
-    
-    if (strcasecmp(tok, "red") == 0) {
-        r=255; g=0; b=0;
-    }
-    else if (strcasecmp(tok, "orange") == 0) {
-        r=255; g=100; b=0;
-    }
-    else if (strcasecmp(tok, "yellow") == 0) {
-        r=255; g=255; b=0;
-    }
-    else if (strcasecmp(tok, "green") == 0) {
-        r=0; g=255; b=0;
-    }
-    else if (strcasecmp(tok, "cyan") == 0) {
-        r=0; g=255; b=255;
-    }
-    else if (strcasecmp(tok, "blue") == 0) {
-        r=0; g=0; b=255;
-    }
-    else if (strcasecmp(tok, "magenta") == 0) {
-        r=255; g=0; b=255;
-    }
-    else if (strcasecmp(tok, "white") == 0) {
-        r=255; g=255; b=255;
-    }
-    else if (strcasecmp(tok, "off") == 0 || strcasecmp(tok, "clear") == 0) {
-        icons->clearIcon(idx);
-        return;
-    }
-    else {
-        // try r,g,b
-        if (sscanf(tok, "%d,%d,%d", (int*)&r, (int*)&g, (int*)&b) != 3) {
-            Serial.print("\033[31mError: Unknown color ");
-            Serial.println(tok);
-            if (pixel) pixel->setStatus(ERROR);
-            return;
-        }
-    }
-
-    if (blinkInterval > 0) {
-        icons->setIcon(idx, r, g, b, blinkInterval);
-    } else {
-        icons->setIcon(idx, r, g, b);
-    }
 }
 
 void UartHandler::parseServoCommand(char *args) {
@@ -189,7 +144,9 @@ void UartHandler::parseTimerCommand(char *args) {
     if (strncmp(args, "start", 5) == 0) {
         // start timer
         if (display) {
-            display->start();
+            int seconds = atoi(args);
+            extern TimerDisplayTask displayTask;
+            displayTask.start((uint32_t)seconds*1000UL);
             Serial.println("Timer started");
         }
     }
@@ -200,22 +157,11 @@ void UartHandler::parseTimerCommand(char *args) {
             Serial.println("Timer stopped");
         }
     }
-    else if (strncmp(args, "brightness", 10) == 0) {
-        char *tok = strtok(args + 10, " \t");
-        if (!tok) return;
-        int b = atoi(tok);
-        if (b < 0) b = 0;
-        if (b > 7) b = 7;
-        extern DisplayTask displayTask;
-        displayTask.setBrightness((uint8_t)b);
-        Serial.print("Display brightness set to ");
-        Serial.println(b);
-    }
     else {
         // set time
         int seconds = atoi(args);
         extern DisplayTask displayTask;
-        displayTask.setTime((uint32_t)seconds);
+        displayTask.show((uint32_t)seconds*1000UL);
         Serial.print("Timer set to ");
         Serial.print(seconds);
         Serial.println(" seconds");
@@ -259,52 +205,8 @@ void UartHandler::parseBodyCommand(char *args) {
         if (pixel) pixel->setStatus(ERROR);
         return;
     }
-    
-    uint8_t r=0, g=0, b=0;
-    
-    if (strcasecmp(args, "red") == 0) {
-        r=255; g=0; b=0;
-    }
-    else if (strcasecmp(args, "orange") == 0) {
-        r=255; g=100; b=0;
-    }
-    else if (strcasecmp(args, "yellow") == 0) {
-        r=255; g=255; b=0;
-    }
-    else if (strcasecmp(args, "green") == 0) {
-        r=0; g=255; b=0;
-    }
-    else if (strcasecmp(args, "cyan") == 0) {
-        r=0; g=255; b=255;
-    }
-    else if (strcasecmp(args, "blue") == 0) {
-        r=0; g=0; b=255;
-    }
-    else if (strcasecmp(args, "magenta") == 0) {
-        r=255; g=0; b=255;
-    }
-    else if (strcasecmp(args, "white") == 0) {
-        r=255; g=255; b=255;
-    }
-    else if (strcasecmp(args, "off") == 0 || strcasecmp(args, "clear") == 0) {
-        r=0; g=0; b=0;
-    }
-    else {
-        // try r,g,b
-        if (sscanf(args, "%d,%d,%d", (int*)&r, (int*)&g, (int*)&b) != 3) {
-            Serial.print("\033[31mError: Unknown color ");
-            Serial.println(args);
-            Serial.println("\033[0m");
-            if (pixel) pixel->setStatus(ERROR);
-            return;
-        }
-    }
-    
-    bodyColor->setColor(r, g, b);
-    Serial.print("Body color set to ");
-    Serial.print(r); Serial.print(",");
-    Serial.print(g); Serial.print(",");
-    Serial.println(b);
+    bodyColor->setColor(String(args));
+
 }
 
 void UartHandler::parseTpsCommand(char *args) {
