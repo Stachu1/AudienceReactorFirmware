@@ -22,11 +22,11 @@ void IconTask::setIcon(const String& iconName) {
 
     clear();
 
-    if (iconName == "meanF0") leds[0] = CRGB::Cyan;
-    else if (iconName == "F0std") leds[2] = CRGB::Cyan;
-    else if (iconName == "meanF1") leds[4] = CRGB::Cyan;
-    else if (iconName == "H1minusA3") leds[6] = CRGB::Cyan;
-    else if (iconName == "pauseCount") leds[8] = CRGB::Cyan;
+    if (iconName == "H1minusA3") leds[0] = CRGB::Cyan;
+    else if (iconName == "meanF1") leds[2] = CRGB::Cyan;
+    else if (iconName == "meanF0") leds[4] = CRGB::Cyan;
+    else if (iconName == "pauseCount") leds[6] = CRGB::Cyan;
+    else if (iconName == "F0std") leds[8] = CRGB::Cyan;
 
     FastLED.show();
 }

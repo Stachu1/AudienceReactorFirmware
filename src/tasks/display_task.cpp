@@ -8,55 +8,45 @@ void TimerDisplayTask::begin(TM1637Display* display) {
     display->setBrightness(7);
 
 }
-void TimerDisplayTask::show(unsigned long durationMs){
-        unsigned long int seconds = durationMs /1000;
-        unsigned long int minutes = seconds/60;
-        TimeDisp[2] = seconds / 10; //counting seconds
-        TimeDisp[3] = seconds % 10;
-        TimeDisp[0] = minutes / 10; //counting minutes
-        TimeDisp[1] = minutes % 10;
-        display->setSegments((uint8_t*)TimeDisp, 4);
+void TimerDisplayTask::show(unsigned long duration){
+        Timer=duration*1000;
+        //unsigned long int seconds = durationMs /1000;
+        unsigned long int totalSeconds = duration;
+        unsigned long int seconds = totalSeconds %60;
+        unsigned long int minutes = totalSeconds/60;
+        uint16_t value = minutes * 100 + seconds;
+        display->showNumberDecEx(value, 0b01000000, true);
     }
 
-void TimerDisplayTask::start(unsigned long durationMs) {
-    duration = durationMs;
+void TimerDisplayTask::start() {
     start_Time = millis();
-    lastUpdate = 0;
+    Serial.println(start_Time);
+    last_current_time=0;
+
 }
 void TimerDisplayTask::stop(){
     Timer=0;
-    TimeDisp[2] = 0; //counting seconds 
-    TimeDisp[3] = 0;
-    TimeDisp[0] = 0; //counting minutes
-    TimeDisp[1] = 0;
-    display->setSegments((uint8_t*)TimeDisp, 4);
-
+    start_Time=0;
+    uint16_t value = 0;
+    display->showNumberDecEx(value, 0b01000000, true);
 }
 
 void TimerDisplayTask::update() {
-    if (!display || duration == 0) return;
-    
-        unsigned long int elapsed =millis()-start_Time;
-        unsigned long int current_time = Timer - elapsed;
-        if(current_time < 0) current_time = 0;
-
-        if(current_time - last_current_time >= 1000){
-            unsigned long int seconds = current_time /1000;
-            unsigned long int minutes = seconds/60;
-            //seconds = seconds %60;
-            TimeDisp[2] = seconds / 10; //counting seconds
-            TimeDisp[3] = seconds % 10;
-            TimeDisp[0] = minutes / 10; //counting minutes
-            TimeDisp[1] = minutes % 10;
-            display->setSegments((uint8_t*)TimeDisp, 4);
+    if(start_Time==0) return;
+    unsigned long int elapsed =millis()-start_Time;
+    unsigned long int current_time = (elapsed>=Timer) ? 0: (Timer - elapsed);
+    Serial.println(elapsed);
+        if(elapsed - last_current_time >= 1000){
+            Serial.println("update timer");
+            Serial.println(elapsed);
+            unsigned long int totalSeconds = current_time/1000; 
+            unsigned long int seconds = totalSeconds %60;
+            unsigned long int minutes = totalSeconds/60;
+            last_current_time=elapsed;
+            uint16_t value = minutes * 100 + seconds;
+            display->showNumberDecEx(value, 0b01000000, true);
         }
-        if(elapsed>=Timer){ //when timer is up reset timer display to 0
-            Timer=0;
-            TimeDisp[2] = 0; //counting seconds
-            TimeDisp[3] = 0;
-            TimeDisp[0] = 0; //counting minutes
-            TimeDisp[1] = 0;
-            display->setSegments((uint8_t*)TimeDisp, 4);
-
-        }
+    if(elapsed==Timer){ //when timer is up reset timer display to 0
+        stop();
+    }
 }

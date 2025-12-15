@@ -7,7 +7,7 @@ public:
     TimerDisplayTask();
 
     void begin(TM1637Display* display);
-    void start(unsigned long durationMs);
+    void start();
     void show(unsigned long durationMs);
     void stop();
     void update();

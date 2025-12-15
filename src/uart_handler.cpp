@@ -94,12 +94,8 @@ void UartHandler::parseIconCommand(char *args) {
     // args: " <index>
     trim(args);
     if (!icons) return;
-    char *tok = strtok(args, " \t");
-    if (!tok) return;
-    int idx = atoi(tok);
-    tok = strtok(NULL, " \t");
-    if (!tok) return;
-    icons->setIcon(args);
+    icons->setIcon(String(args));
+    Serial.println(args);
 }
 
 void UartHandler::parseServoCommand(char *args) {
@@ -137,11 +133,13 @@ void UartHandler::parseTimerCommand(char *args) {
     // args: <seconds>|start <seconds>|stop
     trim(args);
     if (strncmp(args, "start", 5) == 0) {
+        //args+=5; //skip "start" so now only number is further processed
+        trim(args);
         // start timer
         if (display) {
-            int seconds = atoi(args);
+            
             extern TimerDisplayTask displayTask;
-            displayTask.start((uint32_t)seconds*1000UL);
+            displayTask.start();
             Serial.println("Timer started");
         }
     }
@@ -156,7 +154,7 @@ void UartHandler::parseTimerCommand(char *args) {
         // set time
         int seconds = atoi(args);
         extern TimerDisplayTask displayTask;
-        displayTask.show((uint32_t)seconds*1000UL);
+        displayTask.show((uint32_t)seconds);
         Serial.print("Timer set to ");
         Serial.print(seconds);
         Serial.println(" seconds");

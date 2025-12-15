@@ -18,10 +18,9 @@
 #define NEO_PWR 11
 #define NEO 12
 #define NUMPIXELS 1
+
 #define STRIP_PIN 7
-
-
-#define NUM_LEDS 30
+#define NUM_LEDS 202
 #define ICON_COUNT 10
 
 #define SERVO1 3
@@ -80,7 +79,7 @@ void setup() {
 
     //initialize LED strip
     FastLED.addLeds<WS2812, STRIP_PIN,GRB>(leds,NUM_LEDS);
-    FastLED.setBrightness(128);
+    FastLED.setBrightness(100);
     iconTask.begin(leds, ICON_COUNT);
     bodyColorTask.begin(leds,NUM_LEDS, ICON_COUNT);
     displayTask.begin(&display);
