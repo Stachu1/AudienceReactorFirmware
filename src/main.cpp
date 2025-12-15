@@ -122,10 +122,11 @@ void loop() {
     radarTask.update();
 
     // NoddingCheck for nodding
-    static uint32_t callNod = 1; // test for call
-if(callNod == 1){
-    servoTask2.nodOnce(20, 500, 0);
-    servoTask3.nodOnce(160, 500, 0);
-    callNod = 0;
-    }
+    static uint32_t callNod = 0; // test for call
+    uint32_t millistNow = millis();
+    if(millistNow - callNod > 10000){
+        callNod = millistNow;
+        servoTask2.nodOnce(20, 500, 0);
+        servoTask3.nodOnce(160, 500, 0);
+        }
 }

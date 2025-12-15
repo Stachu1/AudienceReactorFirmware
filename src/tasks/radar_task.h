@@ -36,5 +36,5 @@ private:
     const int8_t TURN_OFFSET = 85;        // degrees
     const uint16_t UPDATE_INTERVAL = 30;  // milliseconds
     const float X_OFFSET = 29.0f;         // mm
-    const float Y_OFFSET = 110.0f;        // mm
+    const float Y_OFFSET = 90.0f;        // mm
 };
